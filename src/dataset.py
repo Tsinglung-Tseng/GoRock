@@ -25,10 +25,10 @@ class MNISTLoader:
         ).batch(32)
 
     def train_data(self):
-        return self.train_ds#.as_numpy_iterator()
+        return self.train_ds  # .as_numpy_iterator()
 
     def test_data(self):
-        return self.test_ds#.as_numpy_iterator()
+        return self.test_ds  # .as_numpy_iterator()
 
 
 # class MLP(tf.keras.Model):

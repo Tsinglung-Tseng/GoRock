@@ -23,14 +23,14 @@ class Trainer:
         @tf.function
         def train_step(inputs, labels):
             with tf.GradientTape() as tape:
-                print(inputs.shape)
-                print(self.model)
-                predictions = self.model(inputs=inputs)
-                loss = self.loss_object(labels, predicitons)
+                predictions = self.model(inputs)
+                loss = self.loss_object(labels, predictions)
 
-            gradients = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            
+            gradients = tape.gradient(loss, self.model.trainable_variables)
+            self.optimizer.apply_gradients(
+                zip(gradients, self.model.trainable_variables)
+            )
+
             self.train_loss(loss)
             self.train_accuracy(labels, predictions)
 
@@ -38,9 +38,9 @@ class Trainer:
         def test_step(inputs, labels):
             predictions = self.model(inputs)
             t_loss = self.loss_object(labels, predictions)
-            
-            self.test_loss = self.test_loss(t_loss)
-            self.test_accuracy = self.test_accuracy(labels, predictions)
+
+            self.test_loss(t_loss)
+            self.test_accuracy(labels, predictions)
 
         for epoch in range(self.epoch):
             self.train_loss.reset_states()
@@ -56,12 +56,11 @@ class Trainer:
 
             template = """Epoch: {}, Loss: {}, Accuracy: {}, Test Loss:{}, Test Accuracy: {}."""
             print(
-                    template.format(
-                        epoch + 1,
-                        round(train_loss.result(), 4),
-                        round(train_accuracy.result() * 100, 4),
-                        round(test_loss.result(), 4),
-                        round(test_accuracy.result(), 4)
-                    )
+                template.format(
+                    epoch + 1,
+                    self.train_loss.result(),
+                    self.train_accuracy.result() * 100,
+                    self.test_loss.result(),
+                    self.test_accuracy.result(),
+                )
             )
-
