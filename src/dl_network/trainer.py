@@ -19,6 +19,14 @@ class Trainer:
         self.test_loss = self.config.test_loss
         self.test_accuracy = self.config.test_accuracy
 
+    def _log_config(self):
+        if self.logger is None:
+            pass
+        else:
+            self.logger.log_network_config(self.config)
+            self.logger.log_
+            #TODO
+
     def run(self):
         @tf.function
         def train_step(inputs, labels):
@@ -61,6 +69,6 @@ class Trainer:
                     self.train_loss.result(),
                     self.train_accuracy.result() * 100,
                     self.test_loss.result(),
-                    self.test_accuracy.result(),
+                    self.test_accuracy.result() * 100,
                 )
             )

@@ -5,8 +5,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 
-# from .config import SessionConfig
-
 
 class Conv2DClassification(Model):
     def __init__(self):
@@ -21,3 +19,22 @@ class Conv2DClassification(Model):
         x = self.d1(x)
         x = self.d2(x)
         return self.softmax(x)
+
+
+class SeqModel(Model):
+    def __init__(self, config):
+        super(SeqModel, self).__init__()
+        self.config = config
+        self._layers = []
+        for layer in self.config:
+            layer_type = list(layer.keys())[0]
+            layer_parm = list(layer.values())[0]
+            self._layers.append(ConfigBiMapping.load_mapping[layer_type](**layer_parm))
+        
+        for l in self._layers:
+            print(l)
+    
+    def call(self, x):
+        for layer in self._layers:
+            x = layer(x)
+        return x
