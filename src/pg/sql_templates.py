@@ -9,7 +9,7 @@ class Template:
 
     @staticmethod
     def lookup_session_config_by_config(config):
-        return i'''SELECT id FROM tf_session_config WHERE config='{{config}}';'''
+        return f'''SELECT id FROM tf_session_config WHERE config='{{config}}';'''
 
     # @staticmethod
     # def insert_dataset_config(config):

@@ -36,3 +36,12 @@ class SeqModel(Model):
         for layer in self._layers:
             x = layer(x)
         return x
+
+
+class GeneralModel(Model):
+    def __init__(self, config):
+        super(GeneralModel, self).__init__()
+        self.config = config
+        self._sub_models = []
+        for sub_model in self._sub_models:
+            sub_model_type = list

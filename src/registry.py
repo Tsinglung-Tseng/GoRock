@@ -1,7 +1,5 @@
 import tensorflow as tf
 
-# from .utils.logging_methods import Print
-
 
 class Registry:
     bi_mapping_items = [
@@ -13,7 +11,6 @@ class Registry:
         tf.keras.layers.Flatten,
         tf.keras.layers.Conv2D,
         tf.keras.layers.Softmax,
-        # Print
     ]
 
 
