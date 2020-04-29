@@ -5,13 +5,14 @@ from .dl_network.config import FrozenJSON
 
 class MNISTLoader:
     def __init__(self, config):
+        self.raw_config = config
         self.config = FrozenJSON(config)
         self.mnist = tf.keras.datasets.mnist
         (
             (self.x_train, self.y_train),
             (self.x_test, self.y_test),
         ) = self.mnist.load_data()
-    
+
         if self.config.normalization:
             self.x_train, self.x_test = self.x_train / 255.0, self.x_test / 255.0
 
@@ -33,4 +34,3 @@ class MNISTLoader:
 
     def test_data(self):
         return self.test_ds  # .as_numpy_iterator()
-

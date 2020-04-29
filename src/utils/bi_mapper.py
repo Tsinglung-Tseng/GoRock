@@ -1,25 +1,15 @@
-from .singleton import Singleton
-import tensorflow as tf
+# from .singleton import Singleton
+# import tensorflow as tf
 from collections import abc
+from ..registry import Registry
 
 
 class ConfigBiMapping:
-
     __primitive = (bool, int, str, float)
 
-    __bi_mapping_items = [
-        tf.keras.losses.SparseCategoricalCrossentropy,
-        tf.keras.optimizers.Adam,
-        tf.keras.metrics.Mean,
-        tf.keras.metrics.SparseCategoricalAccuracy,
-        tf.keras.layers.Dense,
-        tf.keras.layers.Flatten,
-        tf.keras.layers.Conv2D,
-        tf.keras.layers.Softmax,
-    ]
-    load_mapping = {key.__name__: key for key in __bi_mapping_items}
-    dump_mapping = {key: key.__name__ for key in __bi_mapping_items}
-     
+    load_mapping = {key.__name__: key for key in Registry.bi_mapping_items}
+    dump_mapping = {key: key.__name__ for key in Registry.bi_mapping_items}
+
     @staticmethod
     def load(obj):
         result = {}
@@ -32,7 +22,7 @@ class ConfigBiMapping:
             else:
                 result[k] = ConfigBiMapping.load(v)
         return result
-    
+
     @staticmethod
     def dump(a_dict):
         def _is_primitive(var):
@@ -49,4 +39,3 @@ class ConfigBiMapping:
                 result[k] = ConfigBiMapping.dump(v)
 
         return result
-

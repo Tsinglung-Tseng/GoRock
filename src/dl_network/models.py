@@ -4,6 +4,7 @@ import tensorflow as tf
 
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
+from ..utils.bi_mapper import ConfigBiMapping
 
 
 class Conv2DClassification(Model):
@@ -30,10 +31,7 @@ class SeqModel(Model):
             layer_type = list(layer.keys())[0]
             layer_parm = list(layer.values())[0]
             self._layers.append(ConfigBiMapping.load_mapping[layer_type](**layer_parm))
-        
-        for l in self._layers:
-            print(l)
-    
+
     def call(self, x):
         for layer in self._layers:
             x = layer(x)
