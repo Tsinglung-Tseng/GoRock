@@ -41,9 +41,7 @@ class SeqModel(Model):
         return x
 
     def dump_config(self):
-        return json.dumps(
-            TFWrapperCrasher({self.__class__.__name__: list(self.config)})()
-        )
+        return TFWrapperCrasher({self.__class__.__name__: list(self.config)})()
 
 
 class Models:
@@ -58,8 +56,8 @@ class Models:
 
 class ModelBuilder:
     def __init__(self, config):
-        if len(config) != 1:
-            raise ValueError("TF dose not support concate multiple models, use one only!")
+        # if len(config) != 1:
+            # raise ValueError("TF dose not support concate multiple models, use one only!")
         self.config = config
         
     def __call__(self):

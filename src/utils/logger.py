@@ -27,15 +27,15 @@ class LogAndPrint(LoggerMethod):
         self.model_config = sess.model.dump_config()
         self.sess_config = sess.dump_config()
 
-        # self.dataset_config_id = SQLRunner.insert_config_if_not_exist_routine(
-        # ConfigType.DATASET, self.dataset_config
-        # )
-        # self.model_config_id = SQLRunner.insert_config_if_not_exist_routine(
-        # ConfigType.MODEL, self.model_config
-        # )
-        # self.sess_config_id = SQLRunner.insert_config_if_not_exist_routine(
-        # ConfigType.SESSION, self.sess_config
-        # )
+        self.dataset_config_id = SQLRunner.insert_config_if_not_exist(
+            ConfigType.DATASET, self.dataset_config
+        )
+        self.model_config_id = SQLRunner.insert_config_if_not_exist(
+            ConfigType.MODEL, self.model_config
+        )
+        self.sess_config_id = SQLRunner.insert_config_if_not_exist(
+            ConfigType.SESSION, self.sess_config
+        )
 
     def __call__(self):
         def _log_and_print(data_to_log):
@@ -45,3 +45,4 @@ class LogAndPrint(LoggerMethod):
                 result = cur.fetchall()
 
         return _log_and_print
+

@@ -25,7 +25,7 @@ class Trainer:
         self.logger = logger(self)
 
     def dump_config(self):
-        return json.dumps(ConfigBiMapping.dump(self.raw_config))
+        return ConfigBiMapping.dump(self.raw_config)
 
     def run(self):
         @tf.function
@@ -72,13 +72,3 @@ class Trainer:
 
             self.logger()(data_to_log)
 
-            # template = """Epoch: {}, Loss: {}, Accuracy: {}, Test Loss:{}, Test Accuracy: {}."""
-            # self.logger(
-            # template.format(
-            # epoch + 1,
-            # self.train_loss.result(),
-            # self.train_accuracy.result() * 100,
-            # self.test_loss.result(),
-            # self.test_accuracy.result() * 100,
-            # )
-            # )

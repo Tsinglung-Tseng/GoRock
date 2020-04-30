@@ -1,5 +1,3 @@
-# from .singleton import Singleton
-# import tensorflow as tf
 from collections import abc
 from ..registry import Registry
 
