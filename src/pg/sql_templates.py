@@ -1,3 +1,4 @@
+import psycopg2
 from .pool import server_side_cursor, simple_cursor
 from ..registry import ConfigType
 
@@ -9,15 +10,15 @@ class Template:
 
     @staticmethod
     def lookup_session_config_by_config(config):
-        return f'''SELECT id FROM tf_session_config WHERE config='{{config}}';'''
+        return f"""SELECT id FROM tf_session_config WHERE config='{{config}}';"""
 
     # @staticmethod
     # def insert_dataset_config(config):
-        # return f"""insert INTO dataset_config (config) VALUES ({config}) returning id; """
+    # return f"""insert INTO dataset_config (config) VALUES ({config}) returning id; """
 
     # @staticmethod
     # def insert_model_config(config):
-        # return f"""insert INTO model_config (config) VALUES ({config}) returning id; """
+    # return f"""insert INTO model_config (config) VALUES ({config}) returning id; """
 
 
 class SQLRunner:

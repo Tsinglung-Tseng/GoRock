@@ -15,7 +15,6 @@ class Registry:
 
 
 class ConfigType:
-    DATASET = 'dataset'
-    MODEL = 'model'
-    SESSION = 'tf_session'
-
+    DATASET = "dataset"
+    MODEL = "model"
+    SESSION = "tf_session"

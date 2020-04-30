@@ -1,5 +1,7 @@
 import tensorflow as tf
+import json
 from .config import FrozenJSON
+from ..utils.bi_mapper import ConfigBiMapping
 
 
 class Trainer:
@@ -21,6 +23,9 @@ class Trainer:
         self.test_accuracy = self.config.test_accuracy
 
         self.logger = logger(self)
+
+    def dump_config(self):
+        return json.dumps(ConfigBiMapping.dump(self.raw_config))
 
     def run(self):
         @tf.function
