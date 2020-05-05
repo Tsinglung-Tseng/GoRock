@@ -11,18 +11,18 @@ from ..utils.tf_wrapper_crasher import TFWrapperCrasher
 
 
 # class Conv2DClassification(Model):
-    # def __init__(self):
-        # super(Conv2DClassification, self).__init__()
-        # self.flatten = Flatten()
-        # self.d1 = Dense(128, activation="relu")
-        # self.d2 = Dense(10, activation="softmax")
-        # self.softmax = tf.keras.layers.Softmax()
+# def __init__(self):
+# super(Conv2DClassification, self).__init__()
+# self.flatten = Flatten()
+# self.d1 = Dense(128, activation="relu")
+# self.d2 = Dense(10, activation="softmax")
+# self.softmax = tf.keras.layers.Softmax()
 
-    # def call(self, x):
-        # x = self.flatten(x)
-        # x = self.d1(x)
-        # x = self.d2(x)
-        # return self.softmax(x)
+# def call(self, x):
+# x = self.flatten(x)
+# x = self.d1(x)
+# x = self.d2(x)
+# return self.softmax(x)
 
 
 class SeqModel(Model):
@@ -57,10 +57,8 @@ class Models:
 class ModelBuilder:
     def __init__(self, config):
         # if len(config) != 1:
-            # raise ValueError("TF dose not support concate multiple models, use one only!")
+        # raise ValueError("TF dose not support concate multiple models, use one only!")
         self.config = config
-        
+
     def __call__(self):
         return Models.load(list(self.config.keys())[0])(list(self.config.values())[0])
-
-

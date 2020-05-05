@@ -62,4 +62,3 @@ class MNISTDataset(Dataset):
     @property
     def x_shape(self):
         return (self.config.batch_size, *self.x_train.shape[1:])
-

@@ -71,4 +71,3 @@ class Trainer:
             }
 
             self.logger()(data_to_log)
-
