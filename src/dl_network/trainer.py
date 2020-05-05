@@ -62,12 +62,12 @@ class Trainer:
             for test_inputs, test_labels in self.dataset.test_data():
                 test_step(test_inputs, test_labels)
 
-            data_to_log = {
-                "epoch": epoch + 1,
-                "loss": float(self.train_loss.result()),
-                "accuracy": float(self.train_accuracy.result() * 100),
-                "test_error": float(self.test_loss.result()),
-                "test_accuracy": float(self.test_accuracy.result() * 100),
-            }
-
-            self.logger()(data_to_log)
+            self.logger()(
+                {
+                    "epoch": epoch + 1,
+                    "loss": float(self.train_loss.result()),
+                    "accuracy": float(self.train_accuracy.result() * 100),
+                    "test_error": float(self.test_loss.result()),
+                    "test_accuracy": float(self.test_accuracy.result() * 100),
+                }
+            )
