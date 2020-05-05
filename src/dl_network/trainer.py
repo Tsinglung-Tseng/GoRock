@@ -1,12 +1,15 @@
 import tensorflow as tf
+import json
 from .config import FrozenJSON
+from ..utils.bi_mapper import ConfigBiMapping
 
 
 class Trainer:
-    def __init__(self, dataset, model: tf.Module, config):
+    def __init__(self, dataset, model: tf.Module, config, logger):
         self.dataset = dataset
 
         self.model = model
+        self.raw_config = config
         self.config = FrozenJSON(config)
 
         self.epoch = self.config.epoch
@@ -19,13 +22,10 @@ class Trainer:
         self.test_loss = self.config.test_loss
         self.test_accuracy = self.config.test_accuracy
 
-    def _log_config(self):
-        if self.logger is None:
-            pass
-        else:
-            self.logger.log_network_config(self.config)
-            self.logger.log_
-            #TODO
+        self.logger = logger(self)
+
+    def dump_config(self):
+        return ConfigBiMapping.dump(self.raw_config)
 
     def run(self):
         @tf.function
@@ -62,13 +62,12 @@ class Trainer:
             for test_inputs, test_labels in self.dataset.test_data():
                 test_step(test_inputs, test_labels)
 
-            template = """Epoch: {}, Loss: {}, Accuracy: {}, Test Loss:{}, Test Accuracy: {}."""
-            print(
-                template.format(
-                    epoch + 1,
-                    self.train_loss.result(),
-                    self.train_accuracy.result() * 100,
-                    self.test_loss.result(),
-                    self.test_accuracy.result() * 100,
-                )
-            )
+            data_to_log = {
+                "epoch": epoch + 1,
+                "loss": float(self.train_loss.result()),
+                "accuracy": float(self.train_accuracy.result() * 100),
+                "test_error": float(self.test_loss.result()),
+                "test_accuracy": float(self.test_accuracy.result() * 100),
+            }
+
+            self.logger()(data_to_log)

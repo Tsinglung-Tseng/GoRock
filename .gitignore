@@ -20,7 +20,8 @@ ipython_config.py
 /notebook
 
 Byte-compiled / optimized / DLL files
-__pycache__/
+*/__pycache__/*
+*/.idea/*
 *.py[cod]
 
 # C extensions
@@ -43,3 +44,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+tags
+*/.idea/*
