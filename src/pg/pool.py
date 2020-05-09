@@ -1,8 +1,8 @@
-from psycopg2.pool import SimpleConnectionPool
-from psycopg2.extras import DictCursor
-import psycopg2
-
 from contextlib import contextmanager
+
+import psycopg2
+from psycopg2.extras import DictCursor
+from psycopg2.pool import SimpleConnectionPool
 
 
 class Singleton(object):

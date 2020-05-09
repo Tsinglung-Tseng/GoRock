@@ -1,11 +1,15 @@
-import tensorflow as tf
 import json
-from .config import FrozenJSON
+
+import tensorflow as tf
+
 from ..utils.bi_mapper import ConfigBiMapping
+from .config import FrozenJSON
+from ..dl_network.hasher import Hasher
+from .variable import Variable
 
 
 class Trainer:
-    def __init__(self, dataset, model: tf.Module, config, logger):
+    def __init__(self, dataset, model: tf.Module, config, logger, variables=None):
         self.dataset = dataset
 
         self.model = model
@@ -24,10 +28,26 @@ class Trainer:
 
         self.logger = logger(self)
 
+        self.variables = variables
+
     def dump_config(self):
         return ConfigBiMapping.dump(self.raw_config)
 
+    @property
+    def hash(self):
+        return Hasher.trainer_hasher(self)
+
+    def build(self):
+        pass
+        # TODO
+        # if self.variables is not None:
+        # self.model.load_weights('weights.h5')
+        # pass
+
     def run(self):
+        self.build()
+        self.logger.on_session_start()
+
         @tf.function
         def train_step(inputs, labels):
             with tf.GradientTape() as tape:
@@ -62,12 +82,8 @@ class Trainer:
             for test_inputs, test_labels in self.dataset.test_data():
                 test_step(test_inputs, test_labels)
 
-            self.logger()(
-                {
-                    "epoch": epoch + 1,
-                    "loss": float(self.train_loss.result()),
-                    "accuracy": float(self.train_accuracy.result() * 100),
-                    "test_error": float(self.test_loss.result()),
-                    "test_accuracy": float(self.test_accuracy.result() * 100),
-                }
-            )
+            self.logger.log_epoch_progress(self)
+
+        self.variable = Variable(self)
+        self.variable.save(self.logger.session_id)
+        self.logger.on_session_end()

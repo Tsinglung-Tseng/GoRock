@@ -24,3 +24,7 @@ class ConfigType:
 class TableName:
     SESSIONLOG = "session_log"
     SESSION = "session"
+
+
+class FilePath:
+    VARIABLE = "/mnt/users/qinglong/variables"
