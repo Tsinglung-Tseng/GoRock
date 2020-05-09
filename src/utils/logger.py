@@ -1,51 +1,71 @@
 import abc
-from ..pg.pool import server_side_cursor
-from ..dl_network.trainer import Trainer
-from ..pg.sql_templates import Template, SQLRunner
-from ..registry import ConfigType
 import json
+
+from ..dl_network.trainer import Trainer
+from ..pg.pool import server_side_cursor
+from ..pg.sql_templates import SQLRunner, Template
+from ..registry import ConfigType
 from .bi_mapper import ConfigBiMapping
 
 
-class LoggerMethod:
+class Logger:
     @abc.abstractmethod
     def __call__(self):
         pass
 
 
-class Print(LoggerMethod):
-    def __init__(self, sess: Trainer):
-        pass
+# class Print(Logger):
+# def __init__(self, trainer: Trainer):
+# pass
 
-    def __call__(self):
-        return print
+# def __call__(self):
+# return print
 
 
-class LogAndPrint(LoggerMethod):
-    def __init__(self, sess: Trainer):
-        self.dataset_config = sess.dataset.dump_config()
-        self.model_config = sess.model.dump_config()
-        self.sess_config = sess.dump_config()
+class LogAndPrint(Logger):
+    def __init__(self, trainer: Trainer):
+        self.dataset_config = trainer.dataset.dump_config()
+        self.model_config = trainer.model.dump_config()
+        self.trainer_config = trainer.dump_config()
 
-        self.dataset_config_id = SQLRunner.insert_config_if_not_exist(
-            ConfigType.DATASET, self.dataset_config
-        )
-        self.model_config_id = SQLRunner.insert_config_if_not_exist(
-            ConfigType.MODEL, self.model_config
-        )
-        self.tf_session_config_id = SQLRunner.insert_config_if_not_exist(
-            ConfigType.SESSION, self.sess_config
-        )
-        self.data_to_log = {
-            'dataset_config_id': self.dataset_config_id,
-            'model_config_id': self.model_config_id,
-            'tf_session_config_id': self.tf_session_config_id,
+        self.prior_session_id = None
+        self.session_reference = {
+            "dataset_config_id": SQLRunner.insert_config_if_not_exist(
+                ConfigType.DATASET, self.dataset_config
+            ),
+            "model_config_id": SQLRunner.insert_config_if_not_exist(
+                ConfigType.MODEL, self.model_config
+            ),
+            "trainer_config_id": SQLRunner.insert_config_if_not_exist(
+                ConfigType.TRAINER, self.trainer_config
+            ),
         }
+        self.session_id = SQLRunner.create_or_add_cascade_sessoion(self)
+        self.session_process = {"session_id": self.session_id, "epoch": 0}
 
-    def __call__(self):
-        def _log_and_print(sess_progress):
-            self.data_to_log.update(sess_progress)
-            SQLRunner.insert_sessoion_log(self.data_to_log)
-            print(self.data_to_log)
-        return _log_and_print
+    # def __call__(self):
+    # def _log_and_print(sess_progress):
+    # self.session_process.update(sess_progress)
+    # SQLRunner.insert_sessoion_log(self)
+    # print(self.session_process)
 
+    # return _log_and_print
+
+    def log_epoch_progress(self, trainer):
+        self.session_process.update(
+            {
+                "epoch": self.session_process["epoch"] + 1,
+                "loss": float(trainer.train_loss.result()),
+                "accuracy": float(trainer.train_accuracy.result() * 100),
+                "test_error": float(trainer.test_loss.result()),
+                "test_accuracy": float(trainer.test_accuracy.result() * 100),
+            }
+        )
+        SQLRunner.insert_sessoion_log(self)
+        print(self.session_process)
+
+    def on_session_start(self):
+        SQLRunner.update_session_on_start(self)
+
+    def on_session_end(self):
+        SQLRunner.update_session_on_end(self)

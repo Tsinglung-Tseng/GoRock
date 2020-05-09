@@ -17,4 +17,14 @@ class Registry:
 class ConfigType:
     DATASET = "dataset"
     MODEL = "model"
-    SESSION = "tf_session"
+    TRAINER = "trainer"
+    # SESSION = "tf_session"
+
+
+class TableName:
+    SESSIONLOG = "session_log"
+    SESSION = "session"
+
+
+class FilePath:
+    VARIABLE = "/mnt/users/qinglong/variables"

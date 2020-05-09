@@ -1,9 +1,11 @@
+import abc
 import json
-import tensorflow as tf
+
 import numpy as np
+import tensorflow as tf
+
 from .dl_network.config import FrozenJSON
 from .utils.bi_mapper import ConfigBiMapping
-import abc
 
 
 class Dataset:

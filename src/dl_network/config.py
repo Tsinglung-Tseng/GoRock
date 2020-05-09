@@ -1,5 +1,5 @@
-from collections import abc
 import keyword
+from collections import abc
 
 
 class FrozenJSON:
@@ -10,7 +10,6 @@ class FrozenJSON:
             raise ValueError(
                 "Dose not accept sequence object, implement it in higher level!"
             )
-            # return [cls(item) for item in arg]
         else:
             return arg
 
