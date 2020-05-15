@@ -39,7 +39,7 @@ class Trainer:
 
     def build(self):
         pass
-        # TODO
+        # TODO: Build model from existing variable
         # if self.variables is not None:
         # self.model.load_weights('weights.h5')
         # pass
