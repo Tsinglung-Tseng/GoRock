@@ -14,7 +14,8 @@ class Trainer:
 
         self.model = model
         self.raw_config = config
-        self.config = FrozenJSON(config)
+        self.config = ConfigBiMapping.load(self.raw_config)
+        self.config = FrozenJSON(self.config)
 
         self.epoch = self.config.epoch
 
@@ -31,7 +32,8 @@ class Trainer:
         self.variables = variables
 
     def dump_config(self):
-        return ConfigBiMapping.dump(self.raw_config)
+        return self.raw_config 
+        # return ConfigBiMapping.dump(self.raw_config)
 
     @property
     def hash(self):
@@ -40,9 +42,6 @@ class Trainer:
     def build(self):
         pass
         # TODO: Build model from existing variable
-        # if self.variables is not None:
-        # self.model.load_weights('weights.h5')
-        # pass
 
     def run(self):
         self.build()

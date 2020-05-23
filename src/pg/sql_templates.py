@@ -37,6 +37,11 @@ class Template:
 
 class SQLRunner:
     @staticmethod
+    def select_on_condition(table_name, condition_value_mapping):
+        #TODO
+        pass
+
+    @staticmethod
     def insert_config_if_not_exist(config_type, config_content):
         config_content = json.dumps(config_content)
         try:

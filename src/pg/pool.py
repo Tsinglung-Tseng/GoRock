@@ -18,6 +18,11 @@ class Singleton(object):
 
 @Singleton
 class PG:
+    """
+    pg = PG()
+    pg.initialize()
+    conn = pg.get_connection()
+    """
     def __init__(self):
         self.__pool = None
 
@@ -39,7 +44,7 @@ class PG:
     def return_connection(self, connection):
         return self.__pool.putconn(connection)
 
-    def class_all_connection(self):
+    def close_all_connection(self):
         self.__pool.closeall()
 
 

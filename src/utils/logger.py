@@ -43,14 +43,6 @@ class LogAndPrint(Logger):
         self.session_id = SQLRunner.create_or_add_cascade_sessoion(self)
         self.session_process = {"session_id": self.session_id, "epoch": 0}
 
-    # def __call__(self):
-    # def _log_and_print(sess_progress):
-    # self.session_process.update(sess_progress)
-    # SQLRunner.insert_sessoion_log(self)
-    # print(self.session_process)
-
-    # return _log_and_print
-
     def log_epoch_progress(self, trainer):
         self.session_process.update(
             {
