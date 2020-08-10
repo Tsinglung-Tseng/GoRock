@@ -30,7 +30,7 @@ class Template:
     @staticmethod
     def update_using_mapping(table_name, value_mapping, id):
         to_update = []
-        for k,v in value_mapping.items():
+        for k, v in value_mapping.items():
             to_update.append("=".join([k, v]))
         return f"""UPDATE {table_name} SET {", ".join(to_update)} WHERE id={id};"""
 
@@ -38,7 +38,7 @@ class Template:
 class SQLRunner:
     @staticmethod
     def select_on_condition(table_name, condition_value_mapping):
-        #TODO
+        # TODO
         pass
 
     @staticmethod
@@ -97,14 +97,18 @@ class SQLRunner:
     def update_session_on_start(logger):
         with simple_cursor() as cur:
             cur.execute(
-                Template.update_time_to_current("session", "start_time", logger.session_id)
+                Template.update_time_to_current(
+                    "session", "start_time", logger.session_id
+                )
             )
 
     @staticmethod
     def update_session_on_end(logger):
         with simple_cursor() as cur:
             cur.execute(
-                Template.update_time_to_current("session", "end_time", logger.session_id)
+                Template.update_time_to_current(
+                    "session", "end_time", logger.session_id
+                )
             )
 
     @staticmethod
@@ -112,11 +116,6 @@ class SQLRunner:
         with simple_cursor() as cur:
             cur.execute(
                 Template.update_using_mapping(
-                    "session", 
-                    {
-                        "variable": "'"+variable_path+"'"
-                    }, 
-                    sess_id
+                    "session", {"variable": "'" + variable_path + "'"}, sess_id
                 )
             )
-

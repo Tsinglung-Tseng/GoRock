@@ -25,7 +25,7 @@ class Registry:
         TFMethodWrapper.MSE,
         TFMethodWrapper.Adam_SRCNN_1eNeg5,
         tf.keras.metrics.MeanSquaredError,
-        tf.keras.layers.UpSampling2D
+        tf.keras.layers.UpSampling2D,
     ]
 
 
@@ -43,5 +43,3 @@ class TableName:
 
 class FilePath:
     VARIABLE = "/mnt/users/qinglong/variables"
-
-

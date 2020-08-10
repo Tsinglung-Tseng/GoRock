@@ -32,7 +32,7 @@ class Trainer:
         self.variables = variables
 
     def dump_config(self):
-        return self.raw_config 
+        return self.raw_config
         # return ConfigBiMapping.dump(self.raw_config)
 
     @property

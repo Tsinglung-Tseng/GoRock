@@ -16,13 +16,14 @@ class Singleton(object):
         return self._instance[self._cls]
 
 
-@Singleton
+# @Singleton
 class PG:
     """
     pg = PG()
     pg.initialize()
     conn = pg.get_connection()
     """
+
     def __init__(self):
         self.__pool = None
 
