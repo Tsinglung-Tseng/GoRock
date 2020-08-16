@@ -47,6 +47,8 @@ class PG:
 
     def close_all_connection(self):
         self.__pool.closeall()
+        
+
 
 
 @contextmanager

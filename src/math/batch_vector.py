@@ -6,6 +6,7 @@ import numpy as np
 INDICES = tf.range(16, dtype=tf.float32)
 ROW_AXIS = 1
 COLUMN_AXIS = 0
+SIPM_GAP = 3.26
 
 
 def batch_unify(batch_vectors):
@@ -61,12 +62,12 @@ def batch_cart_to_plotly(batch_cart3):
             for k, v in zip(
                 ["x", "y", "z"], np.split(batch_cart3.numpy(), [1, 2, 3], axis=1)
             )
-        }
+        },
+        mode='markers',
     )
 
 
 def sipm_local_index_to_world_coordinate(sample):
-    SIPM_GAP = 3.26
 
     def get_sipm_center_at(sample, x, y):
         return tf.stack(
@@ -88,6 +89,7 @@ def sipm_local_index_to_world_coordinate(sample):
     )
     ez = batch_cross(ex, ey)
 
+    # TODO: use mess object to replate batch_anger
     batch_anger_index = batch_anger(sample)
 
     crystal_local_base_matrix = tf.stack([ex, ey, ez], axis=1)

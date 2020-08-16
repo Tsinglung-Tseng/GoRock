@@ -32,7 +32,7 @@ class Trainer:
         self.variables = variables
 
     def dump_config(self):
-        return self.raw_config
+        return self.raw_config 
         # return ConfigBiMapping.dump(self.raw_config)
 
     @property
@@ -85,4 +85,4 @@ class Trainer:
 
         self.variable = Variable(self)
         self.variable.save(self.logger.session_id)
-        self.logger.on_session_end()
+        physical_devices.logger.on_session_end()
