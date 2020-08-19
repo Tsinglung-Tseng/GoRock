@@ -48,35 +48,33 @@ class ModelBuilder:
         return Models.load(list(self.config.keys())[0])(list(self.config.values())[0])
 
 
-
 class IncidentModelSeqModel(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.dropout = tf.keras.layers.Dropout(0.5, input_shape=(32,16,16,8))
+        self.dropout = tf.keras.layers.Dropout(0.5, input_shape=(32, 16, 16, 8))
         self.conv_2d_1 = tf.keras.layers.Conv2D(filters=16, kernel_size=3)
         self.conv_2d_2 = tf.keras.layers.Conv2D(filters=32, kernel_size=3)
         self.conv_2d_3 = tf.keras.layers.Conv2D(filters=64, kernel_size=3)
-        
+
         self.flatten = tf.keras.layers.Flatten()
-        
+
         self.dense_1 = tf.keras.layers.Dense(128)
         self.dense_2 = tf.keras.layers.Dense(64)
         self.dense_3 = tf.keras.layers.Dense(32)
         self.dense_4 = tf.keras.layers.Dense(16)
         self.dense_5 = tf.keras.layers.Dense(6)
-        
-           
+
     def call(self, x):
-        output=self.dropout(x)
-        output=self.conv_2d_1(x)
-        output=self.conv_2d_2(output)
-        output=self.conv_2d_3(output)
-        
-        output=self.flatten(output)
-        
-        output=self.dense_1(output)
-        output=self.dense_2(output)
-        output=self.dense_3(output)
-        output=self.dense_4(output)
-        output=self.dense_5(output)
-        return output  
+        output = self.dropout(x)
+        output = self.conv_2d_1(x)
+        output = self.conv_2d_2(output)
+        output = self.conv_2d_3(output)
+
+        output = self.flatten(output)
+
+        output = self.dense_1(output)
+        output = self.dense_2(output)
+        output = self.dense_3(output)
+        output = self.dense_4(output)
+        output = self.dense_5(output)
+        return output

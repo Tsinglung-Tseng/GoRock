@@ -63,12 +63,11 @@ def batch_cart_to_plotly(batch_cart3):
                 ["x", "y", "z"], np.split(batch_cart3.numpy(), [1, 2, 3], axis=1)
             )
         },
-        mode='markers',
+        mode="markers",
     )
 
 
 def sipm_local_index_to_world_coordinate(sample):
-
     def get_sipm_center_at(sample, x, y):
         return tf.stack(
             [
