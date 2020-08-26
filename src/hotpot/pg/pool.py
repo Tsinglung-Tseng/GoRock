@@ -104,6 +104,3 @@ from psycopg2.pool import SimpleConnectionPool
 #     finally:
 #         conn.commit()
 #         pg.return_connection(conn)
-
-
-

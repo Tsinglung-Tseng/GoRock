@@ -14,8 +14,7 @@ dotenv.load_dotenv(override=True)
 
 class Database:
     def __init__(self):
-        # self.db_connection = os.getenv("DB_CONNECTION")
-        self.db_connection = 'postgresql://postgres:postgres@192.168.1.185:54322/incident'
+        self.db_connection = os.getenv("DB_CONNECTION")
 
     def read_sql(self, sql, params):
         return pandas.read_sql(sql, self.db_connection, params=params)
