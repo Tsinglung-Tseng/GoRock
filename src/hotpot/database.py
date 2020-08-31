@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy import create_engine
 import dotenv
 import os
 import pandas
@@ -26,3 +27,6 @@ class Database:
         yield (conn, cursor)
         cursor.close()
         conn.close()
+
+    def engine(self):
+        return create_engine(self.db_connection)

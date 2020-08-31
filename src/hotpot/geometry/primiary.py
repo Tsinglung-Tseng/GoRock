@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import numpy as np
 import ipyvolume as ipv
+import tensorflow as tf
 
 
 # def point_close_enough(c: Cartisian3):
@@ -21,12 +22,12 @@ def split_raw_df_into_even_odd_pairs(raw_df):
 
 class Cartisian3:
     def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = tf.constant(x)
+        self.y = tf.constant(y)
+        self.z = tf.constant(z)
 
     def __repr__(self):
-        return f"""Cartisian3 <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+        return f"""self.__class__ <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
 
     @classmethod
     def from_pattern(self, raw, pattern):

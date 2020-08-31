@@ -28,6 +28,11 @@ class Dataset:
     也需要：
     dataset.train.fst :: SubDataset
     dataset.train.fst.gamma_incident_local :: Cartisian3
+
+    >>> pc = Dataset(12)
+    >>> go.Figure([pc.train.gamma_incident_local.fst.to_plotly(), pc.train.gamma_incident_local.snd.to_plotly()])
+    or
+    >>> go.Figure(pc.valid.gamma_incident_local.fst.to_plotly())
     """
 
     def __init__(self, dataset_id):
