@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from ..geometry.primiary import Cartisian3
+from ..geometry.primiary import Cartesian3
 
 
-class Vector3(Cartisian3):
+class Vector3(Cartesian3):
     def __init__(self, x, y, z):
         super().__init__(x, y, z)
         # self.x = tf.constant(x)
@@ -105,11 +105,11 @@ class Rotate3D:
         self.angle = tf.constant(angle)
     
     def to_rotation_matrix(self):
-        cartisan_uv = self.v.to_cartesian()
+        cartesan_uv = self.v.to_cartesian()
         a = tf.cos(0.5*self.angle)
-        b = tf.sin(0.5*self.angle)*cartisan_uv.x
-        c = tf.sin(0.5*self.angle)*cartisan_uv.y
-        d = tf.sin(0.5*self.angle)*cartisan_uv.z
+        b = tf.sin(0.5*self.angle)*cartesan_uv.x
+        c = tf.sin(0.5*self.angle)*cartesan_uv.y
+        d = tf.sin(0.5*self.angle)*cartesan_uv.z
         return Quaternion(a,b,c,d).to_rotation_matrix()
         
 #     def from_real(self, real: Real):

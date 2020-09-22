@@ -4,10 +4,10 @@ import pandas as pd
 from ..database import Database
 
 from ..geometry.primiary import (
-    Cartisian3,
+    Cartesian3,
     get_source,
     Pair,
-    PairCartisian3,
+    PairCartesian3,
     split_raw_df_into_even_odd_pairs,
 )
 
@@ -50,8 +50,8 @@ class SubDataset:
     def __init__(self, raw: pd.DataFrame, division):
         self.division = division
         self.raw = raw[self.division]
-        self.source = Cartisian3.from_pattern(self.raw, "source_")
-        self.gamma_incident_local = PairCartisian3(self.raw, "g")
+        self.source = Cartesian3.from_pattern(self.raw, "source_")
+        self.gamma_incident_local = PairCartesian3(self.raw, "g")
         self.fst, self.snd = split_raw_df_into_even_odd_pairs(self.raw)
 
     def __repr__(self):

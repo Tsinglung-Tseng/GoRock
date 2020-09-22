@@ -20,18 +20,25 @@ def split_raw_df_into_even_odd_pairs(raw_df):
     return (raw_df[0::2], raw_df[1::2])
 
 
-class Cartisian3:
+class Cartesian3:
     def __init__(self, x, y, z):
         self.x = tf.constant(x)
         self.y = tf.constant(y)
         self.z = tf.constant(z)
 
     def __repr__(self):
-        return f"""self.__class__ <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+        return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+
+    def __add__(self, other):
+        return Cartesian3(
+            self.x + other.x,
+            self.y + other.y,
+            self.z + other.z
+        )
 
     @classmethod
     def from_pattern(self, raw, pattern):
-        return Cartisian3(
+        return Cartesian3(
             x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
         )
 
@@ -58,7 +65,7 @@ class Cartisian3:
 
 
 def get_source(samples):
-    return Cartisian3(
+    return Cartesian3(
         np.array(samples["source_x"]),
         np.array(samples["source_y"]),
         np.array(samples["source_z"]),
@@ -71,21 +78,21 @@ class Pair:
         self.snd = snd
 
 
-class PairCartisian3(Pair, Cartisian3):
+class PairCartesian3(Pair, Cartesian3):
     def __init__(self, raw, pattern):
-        source = Cartisian3.from_pattern(raw, pattern)
-        Cartisian3.__init__(self, source.x, source.y, source.z)
+        source = Cartesian3.from_pattern(raw, pattern)
+        Cartesian3.__init__(self, source.x, source.y, source.z)
 
         fst, snd = split_raw_df_into_even_odd_pairs(raw)
         Pair.__init__(
             self,
-            Cartisian3.from_pattern(fst, pattern),
-            Cartisian3.from_pattern(snd, pattern),
+            Cartesian3.from_pattern(fst, pattern),
+            Cartesian3.from_pattern(snd, pattern),
         )
 
 
 class Segment(Pair):
-    def __init__(self, car: Cartisian3, cdr: Cartisian3):
+    def __init__(self, car: Cartesian3, cdr: Cartesian3):
         self.car = car
         self.cdr = cdr
 
