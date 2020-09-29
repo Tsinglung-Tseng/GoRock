@@ -17,7 +17,7 @@ class Database:
     def __init__(self):
         self.db_connection = os.getenv("DB_CONNECTION")
 
-    def read_sql(self, sql, params):
+    def read_sql(self, sql, params=None):
         return pandas.read_sql(sql, self.db_connection, params=params)
 
     @contextlib.contextmanager
