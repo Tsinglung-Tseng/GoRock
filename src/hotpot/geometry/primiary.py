@@ -26,6 +26,11 @@ class Cartesian3:
         self.y = tf.constant(y)
         self.z = tf.constant(z)
 
+    # def fmap(self, f):
+    #     return Cartesian3(f(self.x), f(self.y), f(self.z))
+    def zip_op(self, op, other):
+        return Cartesian3(op(self.x, other.x), op(self.y, other.y), op(self.z, other.z))
+
     def __repr__(self):
         return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
 
@@ -36,10 +41,31 @@ class Cartesian3:
             self.z + other.z
         )
 
+    def __sub__(self, other):
+        return Cartesian3(
+            self.x - other.x,
+            self.y - other.y,
+            self.z - other.z
+        )
+
+    def __truediv__(self, other):
+        return Cartesian3(
+            self.x / other,
+            self.y / other,
+            self.z / other
+        )
+
     @classmethod
     def from_pattern(self, raw, pattern):
         return Cartesian3(
             x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
+        )
+
+    def to_spherical(self):
+        return Spherical(
+            r=tf.math.sqrt(sum([tf.square(self.x), tf.square(self.y), tf.square(self.z)])),
+            theta=tf.math.atan2(self.y, self.x),
+            phi=tf.math.atan2(tf.math.sqrt(tf.square(self.x)+tf.square(self.y)), self.z)
         )
 
     def to_plotly(self):
@@ -62,6 +88,20 @@ class Cartesian3:
         return ipv
         # ipv.show()
         # ipv.quickscatter(self.x, self.y, self.z, ")
+
+
+class Spherical:
+    def __init__(self, r, theta, phi):
+        self.r = r
+        self.theta = theta
+        self.phi = phi
+
+    def to_cartesian(self):
+        return Cartesian3(
+            x=self.r*tf.math.sin(self.phi)*tf.math.cos(self.theta),
+            y=self.r*tf.math.sin(self.phi)*tf.math.sin(self.theta),
+            z=self.r*tf.math.cos(self.phi)
+        )
 
 
 def get_source(samples):
@@ -108,3 +148,33 @@ class Segment(Pair):
                 np.array(self.cdr.z).flat,
             )
         ]
+
+
+class Box:
+    def __init__(self, size_x, size_y, size_z):
+        self.size_x = size_x
+        self.size_y = size_y
+        self.size_z = size_z
+
+    @property
+    def vertex(self):
+        x = [self.size_x / 2, self.size_x / 2, self.size_x / 2, self.size_x / 2, -self.size_x / 2, -self.size_x / 2,
+             -self.size_x / 2, -self.size_x / 2]
+        y = [self.size_y / 2, self.size_y / 2, -self.size_y / 2, -self.size_y / 2, self.size_y / 2, self.size_y / 2,
+             -self.size_y / 2, -self.size_y / 2]
+        z = [self.size_z / 2, -self.size_z / 2, -self.size_z / 2, self.size_z / 2, self.size_z / 2, -self.size_z / 2,
+             -self.size_z / 2, self.size_z / 2]
+        return Cartesian3(x, y, z)
+
+    def to_plotly(self):
+        return go.Mesh3d(
+            x=self.vertex.x,
+            y=self.vertex.y,
+            z=self.vertex.z,
+            color='rgb(141,160,203)',
+            opacity=0.5,
+            i=[7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+            j=[3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+            k=[0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+            showscale=True
+        )

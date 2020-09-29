@@ -17,7 +17,6 @@ class Vector3(Cartesian3):
             self.z * that,
         )
 
-        
     # def to_numpy(self):
     #     return (np.array(self.x), np.array(self.y))
 
@@ -96,20 +95,17 @@ class Quaternion:
             }
         )
 
-
-
-
 class Rotate3D:
     def __init__(self, v: UnitVector, angle):
         self.v = v
         self.angle = tf.constant(angle)
     
     def to_rotation_matrix(self):
-        cartesan_uv = self.v.to_cartesian()
+        cartesian_uv = self.v.to_cartesian()
         a = tf.cos(0.5*self.angle)
-        b = tf.sin(0.5*self.angle)*cartesan_uv.x
-        c = tf.sin(0.5*self.angle)*cartesan_uv.y
-        d = tf.sin(0.5*self.angle)*cartesan_uv.z
+        b = tf.sin(0.5*self.angle)*cartesian_uv.x
+        c = tf.sin(0.5*self.angle)*cartesian_uv.y
+        d = tf.sin(0.5*self.angle)*cartesian_uv.z
         return Quaternion(a,b,c,d).to_rotation_matrix()
         
 #     def from_real(self, real: Real):
