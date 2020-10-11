@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo $1
+echo $2
+find $1 -name $2 -type d 

@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 import ipyvolume as ipv
 import tensorflow as tf
-
+from ..database import Database 
 
 # def point_close_enough(c: Cartisian3):
 #     return
@@ -26,8 +26,9 @@ class Cartesian3:
         self.y = tf.constant(y)
         self.z = tf.constant(z)
 
-    # def fmap(self, f):
-    #     return Cartesian3(f(self.x), f(self.y), f(self.z))
+    def fmap(self, f):
+        return Cartesian3(f(self.x), f(self.y), f(self.z))
+
     def zip_op(self, op, other):
         return Cartesian3(op(self.x, other.x), op(self.y, other.y), op(self.z, other.z))
 
@@ -56,10 +57,35 @@ class Cartesian3:
         )
 
     @classmethod
-    def from_pattern(self, raw, pattern):
+    def from_pattern(cls, raw, pattern):
         return Cartesian3(
             x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
         )
+        
+    @classmethod
+    def local_pos_from_hits(cls, hits):
+        return Cartesian3(hits.localPosX, hits.localPosY, hits.localPosZ)
+
+    @classmethod
+    def pos_from_hits(cls, hits):
+        return Cartesian3(hits.posX, hits.posY, hits.posZ)
+
+    def move(self, by_vector):
+        return Cartesian3(self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2])
+
+    def rotate_using_rotate_matrix(self, rotate_matrix):
+        rotated = tf.linalg.matmul(rotate_matrix, self.to_tensor())
+        rotatedX = rotated.numpy()[0, :]
+        rotatedY = rotated.numpy()[1, :]
+        rotatedZ = rotated.numpy()[2, :]
+        return Cartesian3(rotatedX, rotatedY, rotatedZ)
+
+    def distance_to(self, other):
+        diff = self - other
+        return tf.sqrt(tf.reduce_sum(tf.square(diff.to_tensor()), axis=0))
+
+    def to_tensor(self):
+        return tf.stack([tf.constant(self.x), tf.constant(self.y), tf.constant(self.z)])
 
     def to_spherical(self):
         return Spherical(

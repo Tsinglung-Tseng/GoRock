@@ -18,5 +18,7 @@ fi
 
 source activate monolithic-crystal
 
-root -b -q -l root2csv4.C
-python replace_hits_eventID_wit_uuid.py hits_80crystal.csv
+#root -b -q -l root2csv4.C
+#python replace_hits_eventID_wit_uuid.py hits_80crystal.csv
+python optical_to_sample.py hits_80crystal.csv
+
