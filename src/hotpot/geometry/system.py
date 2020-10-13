@@ -125,8 +125,8 @@ class Hit:
             0
         ].tolist()
 
-    def conincidence_sample(self, sipm: SipmArray = SipmArray()):
-        def get_conincidence_hist(hits, eventID, bins=sipm.bins):
+    def coincidence_sample(self, sipm: SipmArray = SipmArray()):
+        def get_coincidence_hist(hits, eventID, bins=sipm.bins):
             gamma_1 = hits[hits.eventID == eventID][
                 hits[hits.eventID == eventID].photonID == 1
             ]
@@ -151,7 +151,7 @@ class Hit:
                         ].iloc[0]
                     ),
                 }
-                sample["counts"] = get_conincidence_hist(hits, eventID, bins=bins)
+                sample["counts"] = get_coincidence_hist(hits, eventID, bins=bins)
                 sample["crystalID"] = [
                     most_photon_crystal(
                         hits[hits["eventID"] == eventID][
@@ -173,12 +173,14 @@ class Hit:
                     .rotate_using_rotate_matrix(rotation_matrix_y(gamma_1_move_args[3]))
                     .fmap(lambda i: tf.reshape(i, (sipm.bins, sipm.bins)))
                     .to_tensor()
-                    .numpy(),
+                    .numpy()
+                    .tolist(),
                     sipm.local_pos.move(gamma_2_move_args[:3])
                     .rotate_using_rotate_matrix(rotation_matrix_y(gamma_2_move_args[3]))
                     .fmap(lambda i: tf.reshape(i, (sipm.bins, sipm.bins)))
                     .to_tensor()
-                    .numpy(),
+                    .numpy()
+                    .tolist(),
                 ]
                 return sample
 
@@ -186,7 +188,7 @@ class Hit:
                 _assemble_single_sample(eventID) for eventID in self.coincidence.ids
             )
 
-        return assemble_samples(self.df)
+        return pd.DataFrame(assemble_samples(self.df))
 
     def single_sample(self, sipm: SipmArray = SipmArray()):
         def get_single_hist(hits, eventID, bins=sipm.bins):
