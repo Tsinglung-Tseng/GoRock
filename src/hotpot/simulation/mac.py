@@ -19,6 +19,7 @@ class MAC:
          ('/gate/world/daughters/insert', 'box'),
          ...
     """
+
     def __init__(self, raw_mac):
         self.raw_mac = raw_mac
 
@@ -27,15 +28,14 @@ class MAC:
 
     def to_pair(self):
         return (
-            FuncList(self.raw_mac.split('\n'))
-                .filter(lambda i: len(i) != 0)
-                .filter(lambda i: i[0] == '/')
-                .map(lambda i: i.split())
-                .map(lambda i: (i[0], ' '.join(i[1:])))
-                .to_list()
+            FuncList(self.raw_mac.split("\n"))
+            .filter(lambda i: len(i) != 0)
+            .filter(lambda i: i[0] == "/")
+            .map(lambda i: i.split())
+            .map(lambda i: (i[0], " ".join(i[1:])))
+            .to_list()
         )
 
     def build(self):
-        #TODO: replace exec with real mac
+        # TODO: replace exec with real mac
         return
-

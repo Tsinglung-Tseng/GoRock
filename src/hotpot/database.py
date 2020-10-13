@@ -14,8 +14,11 @@ dotenv.load_dotenv(override=True)
 
 
 class Database:
-    def __init__(self):
-        self.db_connection = os.getenv("DB_CONNECTION")
+    def __init__(self, db_connection=None):
+        if db_connection is None:
+            self.db_connection = os.getenv("DB_CONNECTION")
+        else:
+            self.db_connection = db_connection
 
     def read_sql(self, sql, params=None):
         return pandas.read_sql(sql, self.db_connection, params=params)

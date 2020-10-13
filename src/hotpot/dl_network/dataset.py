@@ -15,7 +15,7 @@ from ..geometry.primiary import (
 class Dataset:
     """
     这里需要的索引很灵活
-    
+
     首先需要区分训练测试集
     dataset :: Dataset
     dataset.train :: SubDataset | Pair

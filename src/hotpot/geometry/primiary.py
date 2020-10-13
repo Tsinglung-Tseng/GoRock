@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 import ipyvolume as ipv
 import tensorflow as tf
-from ..database import Database 
+from ..database import Database
 
 # def point_close_enough(c: Cartisian3):
 #     return
@@ -36,32 +36,20 @@ class Cartesian3:
         return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
 
     def __add__(self, other):
-        return Cartesian3(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z
-        )
+        return Cartesian3(self.x + other.x, self.y + other.y, self.z + other.z)
 
     def __sub__(self, other):
-        return Cartesian3(
-            self.x - other.x,
-            self.y - other.y,
-            self.z - other.z
-        )
+        return Cartesian3(self.x - other.x, self.y - other.y, self.z - other.z)
 
     def __truediv__(self, other):
-        return Cartesian3(
-            self.x / other,
-            self.y / other,
-            self.z / other
-        )
+        return Cartesian3(self.x / other, self.y / other, self.z / other)
 
     @classmethod
     def from_pattern(cls, raw, pattern):
         return Cartesian3(
             x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
         )
-        
+
     @classmethod
     def local_pos_from_hits(cls, hits):
         return Cartesian3(hits.localPosX, hits.localPosY, hits.localPosZ)
@@ -71,7 +59,9 @@ class Cartesian3:
         return Cartesian3(hits.posX, hits.posY, hits.posZ)
 
     def move(self, by_vector):
-        return Cartesian3(self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2])
+        return Cartesian3(
+            self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
+        )
 
     def rotate_using_rotate_matrix(self, rotate_matrix):
         rotated = tf.linalg.matmul(rotate_matrix, self.to_tensor())
@@ -89,9 +79,13 @@ class Cartesian3:
 
     def to_spherical(self):
         return Spherical(
-            r=tf.math.sqrt(sum([tf.square(self.x), tf.square(self.y), tf.square(self.z)])),
+            r=tf.math.sqrt(
+                sum([tf.square(self.x), tf.square(self.y), tf.square(self.z)])
+            ),
             theta=tf.math.atan2(self.y, self.x),
-            phi=tf.math.atan2(tf.math.sqrt(tf.square(self.x)+tf.square(self.y)), self.z)
+            phi=tf.math.atan2(
+                tf.math.sqrt(tf.square(self.x) + tf.square(self.y)), self.z
+            ),
         )
 
     def to_plotly(self):
@@ -124,9 +118,9 @@ class Spherical:
 
     def to_cartesian(self):
         return Cartesian3(
-            x=self.r*tf.math.sin(self.phi)*tf.math.cos(self.theta),
-            y=self.r*tf.math.sin(self.phi)*tf.math.sin(self.theta),
-            z=self.r*tf.math.cos(self.phi)
+            x=self.r * tf.math.sin(self.phi) * tf.math.cos(self.theta),
+            y=self.r * tf.math.sin(self.phi) * tf.math.sin(self.theta),
+            z=self.r * tf.math.cos(self.phi),
         )
 
 
@@ -184,12 +178,36 @@ class Box:
 
     @property
     def vertex(self):
-        x = [self.size_x / 2, self.size_x / 2, self.size_x / 2, self.size_x / 2, -self.size_x / 2, -self.size_x / 2,
-             -self.size_x / 2, -self.size_x / 2]
-        y = [self.size_y / 2, self.size_y / 2, -self.size_y / 2, -self.size_y / 2, self.size_y / 2, self.size_y / 2,
-             -self.size_y / 2, -self.size_y / 2]
-        z = [self.size_z / 2, -self.size_z / 2, -self.size_z / 2, self.size_z / 2, self.size_z / 2, -self.size_z / 2,
-             -self.size_z / 2, self.size_z / 2]
+        x = [
+            self.size_x / 2,
+            self.size_x / 2,
+            self.size_x / 2,
+            self.size_x / 2,
+            -self.size_x / 2,
+            -self.size_x / 2,
+            -self.size_x / 2,
+            -self.size_x / 2,
+        ]
+        y = [
+            self.size_y / 2,
+            self.size_y / 2,
+            -self.size_y / 2,
+            -self.size_y / 2,
+            self.size_y / 2,
+            self.size_y / 2,
+            -self.size_y / 2,
+            -self.size_y / 2,
+        ]
+        z = [
+            self.size_z / 2,
+            -self.size_z / 2,
+            -self.size_z / 2,
+            self.size_z / 2,
+            self.size_z / 2,
+            -self.size_z / 2,
+            -self.size_z / 2,
+            self.size_z / 2,
+        ]
         return Cartesian3(x, y, z)
 
     def to_plotly(self):
@@ -197,10 +215,10 @@ class Box:
             x=self.vertex.x,
             y=self.vertex.y,
             z=self.vertex.z,
-            color='rgb(141,160,203)',
+            color="rgb(141,160,203)",
             opacity=0.5,
             i=[7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
             j=[3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
             k=[0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
-            showscale=True
+            showscale=True,
         )
