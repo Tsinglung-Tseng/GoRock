@@ -47,3 +47,5 @@ var/
 
 tags
 */.idea/*
+*.csv
+*.swp

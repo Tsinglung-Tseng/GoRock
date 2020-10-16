@@ -182,6 +182,8 @@ class Hit:
                     .numpy()
                     .tolist(),
                 ]
+
+                # sample["PhotoElectricPosX"]
                 return sample
 
             return list(
