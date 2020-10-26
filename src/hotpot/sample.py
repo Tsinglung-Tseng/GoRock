@@ -37,10 +37,10 @@ class FuncArray:
 
     def expand_dims(self, axis):
         return FuncArray(FuncArray(tf.expand_dims(self.to_tensor(), axis)).to_numpy())
-    
+
     def concatenate_with(self, other, axis):
         return FuncArray(np.concatenate([self.array, other.array], axis))
-    
+
     def shrink(self, axis):
         def _index_list_by_list(l, ind):
             return [l[i] for i in ind]
@@ -58,6 +58,10 @@ class FuncArray:
         dim_after_shrink = self_dim - len(axis)
         to_be_shrinked = _index_list_by_list(self_shape, axis)
 
-        shrinked_size = functools.reduce(lambda x,y: x*y, to_be_shrinked)
-        result_dim = _insert_to_list(_index_list_by_list(self_shape, _list_exclude_list(self_dim, axis)), axis[0], shrinked_size)
+        shrinked_size = functools.reduce(lambda x, y: x * y, to_be_shrinked)
+        result_dim = _insert_to_list(
+            _index_list_by_list(self_shape, _list_exclude_list(self_dim, axis)),
+            axis[0],
+            shrinked_size,
+        )
         return FuncArray(self.to_numpy().reshape(result_dim))

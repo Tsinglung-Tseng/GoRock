@@ -6,7 +6,7 @@ from ..database import Database
 
 
 def most_photon_crystal(a_single):
-    return a_single.groupby("crystalID").count().idxmax()[0]
+    return int(a_single.groupby("crystalID").count().idxmax()[0])
 
 
 def move_arg_of_crystal(crystalID):
@@ -29,6 +29,20 @@ def rotation_matrix_y(angle):
             [-np.sin(angle), 0, np.cos(angle)],
         ]
     )
+
+
+class FuncDataFrame:
+    def __init__(self, df):
+        self.df = df
+
+    def where(self, **kwargs):
+        if len(kwargs) != 1:
+            raise ValueError("where clause support one condition at once!")
+        for key, value in kwargs.items():
+            return FuncDataFrame(self.df[self.df[key] == value])
+
+    def filter(self, key_list):
+        return FuncDataFrame(self.df[key_list])
 
 
 class Crystal:
@@ -197,3 +211,23 @@ class Hit:
             gamma = hits[hits.eventID == eventID]
 
         return Hit(gamma_2).hist2d()
+
+    def commit_coincidentce_sample_to_database(self, experiment_id):
+        # coincidence_sample = [tuple(s) for s in self.coincidence.coincidence_sample().to_numpy()]
+        experiment_gamma = [
+            tuple((experiment_id, *row))
+            for row in FuncDataFrame(self.coincidence.df)
+            .where(processName="PhotoElectric")
+            .filter(["eventID", "photonID"])
+            .df.to_numpy()
+        ]
+        with Database().cursor() as (conn, cur):
+            # cur.executemany(
+            # "INSERT INTO coincidence_sample (eventID,sourcePosX,sourcePosY,sourcePosZ,counts,crystalID,sipm_center_pos) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            # coincidence_sample,
+            # )
+            cur.executemany(
+                """INSERT INTO experiment_gamma ("experiment_id","eventID","photonID") VALUES (%s,%s,%s)""",
+                experiment_gamma,
+            )
+            conn.commit()

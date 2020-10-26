@@ -58,6 +58,10 @@ class Cartesian3:
     def pos_from_hits(cls, hits):
         return Cartesian3(hits.posX, hits.posY, hits.posZ)
 
+    @classmethod
+    def source_from_hits(cls, hits):
+        return Cartesian3(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
+
     def move(self, by_vector):
         return Cartesian3(
             self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
