@@ -42,23 +42,28 @@ class MAC:
 
     @staticmethod
     def from_file(path):
-        return MAC("".join(open(path).readlines()), path.split('/')[-1])
+        return MAC("".join(open(path).readlines()), path.split("/")[-1])
 
     @staticmethod
     def from_database(mac_id):
         with Database().cursor() as (conn, cur):
-            cur.execute("""SELECT * FROM mac WHERE id = %s;""", (str(mac_id), ))
-            name, mac_json = cur.fetchone()[1:] 
+            cur.execute("""SELECT * FROM mac WHERE id = %s;""", (str(mac_id),))
+            name, mac_json = cur.fetchone()[1:]
 
         result = []
-        def get_nested_keys(j, outer_k=''):
+
+        def get_nested_keys(j, outer_k=""):
             for key in j.keys():
-                if isinstance(j[key], str) or j[key]=='':
-                    result.append(('/'.join([outer_k, key]), j[key]))
+                if isinstance(j[key], str) or j[key] == "":
+                    result.append(("/".join([outer_k, key]), j[key]))
                 else:
-                    get_nested_keys(j[key], '/'.join([outer_k, key])) 
+                    get_nested_keys(j[key], "/".join([outer_k, key]))
+
         get_nested_keys(mac_json)
-        return MAC('\n'.join(FuncList(result).map(lambda row: '    '.join(row)).to_list()), name) 
+        return MAC(
+            "\n".join(FuncList(result).map(lambda row: "    ".join(row)).to_list()),
+            name,
+        )
 
     def to_json(self):
         def mac_row2json(mac_pair):
@@ -92,7 +97,9 @@ class MAC:
                 result[k] = parallel_json2nested_json(v)
             return dict(result)
 
-        return parallel_json2nested_json(FuncList(self.to_pair().map(mac_row2json).to_list()).to_list())
+        return parallel_json2nested_json(
+            FuncList(self.to_pair().map(mac_row2json).to_list()).to_list()
+        )
 
     def to_pair(self):
         return (
@@ -104,17 +111,25 @@ class MAC:
         )
 
     def dump(self):
-        return '\n'.join(self.to_pair().map(lambda r: '{:<60s}{:<4s}'.format(r[0], r[1])).to_list())
-    
+        return "\n".join(
+            self.to_pair().map(lambda r: "{:<60s}{:<4s}".format(r[0], r[1])).to_list()
+        )
+
     def commit(self):
         try:
             with Database().cursor() as (conn, cur):
-                cur.execute('''INSERT INTO mac ("name", "config") VALUES (%s,%s) returning id;''', (self.name, json.dumps(self.to_json())))
+                cur.execute(
+                    """INSERT INTO mac ("name", "config") VALUES (%s,%s) returning id;""",
+                    (self.name, json.dumps(self.to_json())),
+                )
                 result = cur.fetchall()
                 conn.commit()
             return result[0][0]
         except UniqueViolation as e:
             with Database().cursor() as (conn, cur):
-                cur.execute('''select id from mac where config=%s;''', (json.dumps(self.to_json()),))
+                cur.execute(
+                    """select id from mac where config=%s;""",
+                    (json.dumps(self.to_json()),),
+                )
                 result = cur.fetchall()
             return result[0][0]

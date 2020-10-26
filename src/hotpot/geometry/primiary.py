@@ -26,6 +26,10 @@ class Cartesian3:
         self.y = tf.constant(y)
         self.z = tf.constant(z)
 
+    @staticmethod
+    def from_matrix(m):
+        return Cartesian3(m[0], m[1], m[2])
+
     def fmap(self, f):
         return Cartesian3(f(self.x), f(self.y), f(self.z))
 
@@ -67,16 +71,50 @@ class Cartesian3:
             self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
         )
 
-    def rotate_using_rotate_matrix(self, rotate_matrix):
-        rotated = tf.linalg.matmul(rotate_matrix, self.to_tensor())
-        rotatedX = rotated.numpy()[0, :]
-        rotatedY = rotated.numpy()[1, :]
-        rotatedZ = rotated.numpy()[2, :]
-        return Cartesian3(rotatedX, rotatedY, rotatedZ)
+    def rotate_ypr(self, rv_ypr):
+        def rotation_matrix_x(angle):
+            return tf.convert_to_tensor(
+                [
+                    [1.0, 0.0, 0.0],
+                    [0.0, np.cos(angle), -np.sin(angle)],
+                    [0.0, np.sin(angle), np.cos(angle)],
+                ]
+            )
+
+        def rotation_matrix_y(angle):
+            return tf.convert_to_tensor(
+                [
+                    [ np.cos(angle), 0, np.sin(angle)],
+                    [0.0, 1.0, 0.0],
+                    [-np.sin(angle), 0, np.cos(angle)],
+                ]
+            )
+
+        def rotation_matrix_z(angle):
+            return tf.convert_to_tensor(
+                [
+                    [np.cos(angle), -np.sin(angle), 0.0],
+                    [np.sin(angle),  np.cos(angle), 0.0],
+                    [0.0, 0.0, 1.0],
+                ]
+            )
+
+        return (
+            self.left_matmul(rotation_matrix_x(rv_ypr[0]))
+            .left_matmul(rotation_matrix_y(rv_ypr[1]))
+            .left_matmul(rotation_matrix_z(rv_ypr[2]))
+        )
+
+    def left_matmul(self, m):
+        result = np.matmul(m, self.to_matrix())
+        return Cartesian3.from_matrix(result)
 
     def distance_to(self, other):
         diff = self - other
         return tf.sqrt(tf.reduce_sum(tf.square(diff.to_tensor()), axis=0))
+
+    def to_matrix(self):
+        return tf.stack([self.x, self.y, self.z], axis=0)
 
     def to_tensor(self):
         return tf.stack([tf.constant(self.x), tf.constant(self.y), tf.constant(self.z)])
@@ -112,6 +150,41 @@ class Cartesian3:
         return ipv
         # ipv.show()
         # ipv.quickscatter(self.x, self.y, self.z, ")
+
+
+class Surface:
+    def __init__(self, vertices: Cartesian3):
+        self.vertices = vertices
+
+    @staticmethod
+    def from_size(x_length, y_length):
+        vertex_x = tf.convert_to_tensor([x_length/2, x_length/2, -x_length/2, -x_length/2], dtype=tf.float64)
+        vertex_y = tf.convert_to_tensor([y_length/2, -y_length/2, y_length/2, -y_length/2], dtype=tf.float64)
+        vertex_z = tf.convert_to_tensor([0., 0., 0., 0.], dtype=tf.float64)
+        return Surface(Cartesian3(vertex_x, vertex_y, vertex_z))
+
+    def move(self, move_vector: Cartesian3):
+        return Surface(self.vertices + move_vector)
+
+    def rotate_ypr(self, rv_ypr):
+        return Surface(self.vertices.rotate_ypr(rv_ypr))
+
+    def to_plotly(self):
+        """
+        go.Figure([
+            Surface.from_size(50,50).rotate_ypr([np.pi/4,np.pi/4,np.pi/4]).to_plotly(),
+            Surface.from_size(50,50).to_plotly()
+        ])
+        """
+        data = {
+            'type': 'mesh3d',
+            'x': self.vertices.x,
+            'y': self.vertices.y,
+            'z': self.vertices.z,
+            'color': 'lightblue',
+            'opacity': 0.5,
+        }
+        return data
 
 
 class Spherical:

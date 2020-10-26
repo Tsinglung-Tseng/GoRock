@@ -184,13 +184,13 @@ class Hit:
 
                 sample["sipm_center_pos"] = [
                     sipm.local_pos.move(gamma_1_move_args[:3])
-                    .rotate_using_rotate_matrix(rotation_matrix_y(gamma_1_move_args[3]))
+                    .rotate_ypr([0, gamma_1_move_args[3], 0])
                     .fmap(lambda i: tf.reshape(i, (sipm.bins, sipm.bins)))
                     .to_tensor()
                     .numpy()
                     .tolist(),
                     sipm.local_pos.move(gamma_2_move_args[:3])
-                    .rotate_using_rotate_matrix(rotation_matrix_y(gamma_2_move_args[3]))
+                    .rotate_ypr([0, gamma_2_move_args[3], 0])
                     .fmap(lambda i: tf.reshape(i, (sipm.bins, sipm.bins)))
                     .to_tensor()
                     .numpy()
