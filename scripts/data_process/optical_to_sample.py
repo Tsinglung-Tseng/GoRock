@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from hotpot.geometry.system import Crystal, SipmArray, Hit, FuncDataFrame
+from hotpot.geometry.system import Crystal, SipmArray, Hit, FuncDataFrame, HitsEventIDMapping
 import matplotlib.pyplot as plt
 from hotpot.geometry.primiary import Cartesian3, Database
 import plotly.graph_objects as go
@@ -22,26 +22,26 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-def commit_to_experiment(experiment_id, coincidence_sample):
-    records = [
-        tuple((experiment_id, eventID)) for eventID in coincidence_sample["eventID"]
-    ]
-    with Database().cursor() as (conn, cur):
-        cur.executemany(
-            """INSERT INTO experiment_coincidence_event ("experiment_id", "eventID") VALUES (%s,%s)""",
-            records,
-        )
-        conn.commit()
+# def commit_to_experiment(experiment_id, coincidence_sample):
+#     records = [
+#         tuple((experiment_id, eventID)) for eventID in coincidence_sample["eventID"]
+#     ]
+#     with Database().cursor() as (conn, cur):
+#         cur.executemany(
+#             """INSERT INTO experiment_coincidence_event ("experiment_id", "eventID") VALUES (%s,%s)""",
+#             records,
+#         )
+#         conn.commit()
 
 
 hits = pd.read_csv(args.path)
 h = Hit(hits)
-coincidence_sample = h.coincidence.coincidence_sample()
 
-# coincidence_sample table
-coincidence_sample.to_sql(
-    con=Database().engine(), name="coincidence_sample", if_exists="append", index=False
-)
+# replace number event id with uuid id
+HitsEventIDMapping.build(h.df).do_replace(h.df)
 
-# experiment_coincidence_event table
-commit_to_experiment(args.experiment_id, coincidence_sample)
+# h.set_experiment_id(args.experiment_id)
+
+# coincidence_sample table and experiment_coincidence_event table
+h.gamma_hits.commit('gamma_hits')
+h.commit_coincidentce_sample_to_database(args.experiment_id)

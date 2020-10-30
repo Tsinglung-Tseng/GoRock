@@ -84,7 +84,7 @@ class Cartesian3:
         def rotation_matrix_y(angle):
             return tf.convert_to_tensor(
                 [
-                    [ np.cos(angle), 0, np.sin(angle)],
+                    [np.cos(angle), 0, np.sin(angle)],
                     [0.0, 1.0, 0.0],
                     [-np.sin(angle), 0, np.cos(angle)],
                 ]
@@ -94,7 +94,7 @@ class Cartesian3:
             return tf.convert_to_tensor(
                 [
                     [np.cos(angle), -np.sin(angle), 0.0],
-                    [np.sin(angle),  np.cos(angle), 0.0],
+                    [np.sin(angle), np.cos(angle), 0.0],
                     [0.0, 0.0, 1.0],
                 ]
             )
@@ -158,9 +158,13 @@ class Surface:
 
     @staticmethod
     def from_size(x_length, y_length):
-        vertex_x = tf.convert_to_tensor([x_length/2, x_length/2, -x_length/2, -x_length/2], dtype=tf.float64)
-        vertex_y = tf.convert_to_tensor([y_length/2, -y_length/2, y_length/2, -y_length/2], dtype=tf.float64)
-        vertex_z = tf.convert_to_tensor([0., 0., 0., 0.], dtype=tf.float64)
+        vertex_x = tf.convert_to_tensor(
+            [x_length / 2, x_length / 2, -x_length / 2, -x_length / 2], dtype=tf.float64
+        )
+        vertex_y = tf.convert_to_tensor(
+            [y_length / 2, -y_length / 2, y_length / 2, -y_length / 2], dtype=tf.float64
+        )
+        vertex_z = tf.convert_to_tensor([0.0, 0.0, 0.0, 0.0], dtype=tf.float64)
         return Surface(Cartesian3(vertex_x, vertex_y, vertex_z))
 
     def move(self, move_vector: Cartesian3):
@@ -177,12 +181,12 @@ class Surface:
         ])
         """
         data = {
-            'type': 'mesh3d',
-            'x': self.vertices.x,
-            'y': self.vertices.y,
-            'z': self.vertices.z,
-            'color': 'lightblue',
-            'opacity': 0.5,
+            "type": "mesh3d",
+            "x": self.vertices.x,
+            "y": self.vertices.y,
+            "z": self.vertices.z,
+            "color": "lightblue",
+            "opacity": 0.5,
         }
         return data
 
