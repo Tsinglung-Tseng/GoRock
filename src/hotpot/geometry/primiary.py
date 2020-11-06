@@ -30,6 +30,14 @@ class Cartesian3:
     def from_matrix(m):
         return Cartesian3(m[0], m[1], m[2])
 
+    @staticmethod
+    def from_tuple(TP):
+        return Cartesian3(
+                 x=tf.constant([TP[0]], dtype=tf.float64),
+                 y=tf.constant([TP[1]], dtype=tf.float64),
+                 z=tf.constant([TP[2]], dtype=tf.float64),
+                )
+
     def fmap(self, f):
         return Cartesian3(f(self.x), f(self.y), f(self.z))
 

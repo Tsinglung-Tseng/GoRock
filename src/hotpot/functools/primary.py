@@ -17,6 +17,7 @@ class FuncList:
     def filter(self, func):
         return FuncList(filter(func, self.L))
 
+
 class FuncJson:
     def __init__(self, J):
         self.J = J
