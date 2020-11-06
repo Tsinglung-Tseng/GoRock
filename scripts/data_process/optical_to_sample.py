@@ -22,25 +22,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-# def commit_to_experiment(experiment_id, coincidence_sample):
-#     records = [
-#         tuple((experiment_id, eventID)) for eventID in coincidence_sample["eventID"]
-#     ]
-#     with Database().cursor() as (conn, cur):
-#         cur.executemany(
-#             """INSERT INTO experiment_coincidence_event ("experiment_id", "eventID") VALUES (%s,%s)""",
-#             records,
-#         )
-#         conn.commit()
-
-
 hits = pd.read_csv(args.path)
 h = Hit(hits)
 
 # replace number event id with uuid id
 HitsEventIDMapping.build(h.df).do_replace(h.df)
-
-# h.set_experiment_id(args.experiment_id)
 
 # coincidence_sample table and experiment_coincidence_event table
 h.gamma_hits.commit('gamma_hits')

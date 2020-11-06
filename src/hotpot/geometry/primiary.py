@@ -54,6 +54,15 @@ class Cartesian3:
             x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
         )
 
+    @staticmethod
+    def from_tuple3s(tuple3s):
+        t = np.array(tuple3s, dtype=np.float64).T
+        return Cartesian3(
+            x=t[0],
+            y=t[1],
+            z=t[2],
+        )
+
     @classmethod
     def local_pos_from_hits(cls, hits):
         return Cartesian3(hits.localPosX, hits.localPosY, hits.localPosZ)
@@ -130,18 +139,19 @@ class Cartesian3:
             ),
         )
 
-    def to_plotly(self):
+    def to_plotly(self, **marker):
         return go.Scatter3d(
             x=self.x,
             y=self.y,
             z=self.z,
             mode="markers",
-            marker=dict(
-                size=1,
+            marker=marker
+                # dict(
+                # size=1,
                 #                 color=z,                # set color to an array/list of desired values
                 #                 colorscale='Viridis',   # choose a colorscale
                 #                 opacity=0.8
-            ),
+            # ),
         )
 
     def to_ipyvolume(self):
