@@ -260,7 +260,7 @@ class Hit:
             coincidence_sample,
             )
             cur.executemany(
-                """INSERT INTO experiment_coincidence_event ("experiment_id","eventID") VALUES (%s,%s)""",
+                """INSERT INTO experiment_coincidence_event ("experiment_id","eventID") VALUES (%s,%s) ON CONFLICT DO NOTHING;""",
                 experiment_coincidence_event,
             )
             conn.commit()
@@ -304,11 +304,11 @@ class HitsEventIDMapping:
         return self.df[key]
 
     @ staticmethod
-    def from_file(path='./eventID_mapping.csv'):
+    def from_file(path='./eventID_mapping.map'):
         return HitsEventIDMapping(dict(pd.read_csv(path).to_records(index=False)))
 
     @ staticmethod
-    def build(hits, path='./eventID_mapping.csv'):
+    def build(hits, path='./eventID_mapping.map'):
         try:
             id_map=HitsEventIDMapping.from_file().df
         except FileNotFoundError as e:
