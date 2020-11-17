@@ -154,18 +154,20 @@ class Cartesian3:
             z=self.z,
             mode="markers",
             marker=marker
-                # dict(
-                # size=1,
-                #                 color=z,                # set color to an array/list of desired values
-                #                 colorscale='Viridis',   # choose a colorscale
-                #                 opacity=0.8
-            # ),
         )
 
-    def to_ipyvolume(self):
-        fig = ipv.figure()
-        scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
-        return ipv
+    def to_plotly_as_mesh3d(self, **marker):
+        return go.Mesh3d(
+            x=self.x,
+            y=self.y,
+            z=self.z,
+            marker=marker
+        )
+
+    # def to_ipyvolume(self):
+        # fig = ipv.figure()
+        # scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
+        # return ipv
         # ipv.show()
         # ipv.quickscatter(self.x, self.y, self.z, ")
 

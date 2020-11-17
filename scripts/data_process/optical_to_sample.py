@@ -29,5 +29,9 @@ h = Hit(hits)
 HitsEventIDMapping.build(h.df).do_replace(h.df)
 
 # coincidence_sample table and experiment_coincidence_event table
-h.gamma_hits.commit('gamma_hits')
-h.commit_coincidentce_sample_to_database(args.experiment_id)
+# h.gamma_hits.commit('gamma_hits')
+h.gamma_hits.df.to_csv('gamma_hits.csv', index=False)
+# h.commit_coincidentce_sample_to_database(args.experiment_id)
+coincidence_sample=h.coincidence_sample()
+coincidence_sample.to_csv('coincidence_sample.csv', index=False)
+coincidence_sample.assign(experiment_id=args.experiment_id)[['experiment_id', 'eventID']].to_csv('experiment_coincidence_event.csv', index=False)

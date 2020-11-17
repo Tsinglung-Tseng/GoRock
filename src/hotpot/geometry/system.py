@@ -12,13 +12,8 @@ def most_photon_crystal(a_single):
 
 def move_arg_of_crystal(crystalID):
     return (
-        Database()
-        .read_sql(
-            f"""SELECT move_x, move_y, move_z, rotate_angle_y
-FROM pos_local_to_global
-WHERE crystal_id={crystalID};"""
-        )
-        .iloc[0]
+        pd.read_csv("/home/zengqinglong/optical_simu/model_80_50x50x15_system_crystal_pos_arg.csv")
+        .iloc[crystalID]
     )
 
 
