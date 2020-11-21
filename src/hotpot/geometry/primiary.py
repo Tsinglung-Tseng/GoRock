@@ -147,13 +147,14 @@ class Cartesian3:
             ),
         )
 
-    def to_plotly(self, **marker):
+    def to_plotly(self, mode="markers", **kwargs):
         return go.Scatter3d(
             x=self.x,
             y=self.y,
             z=self.z,
-            mode="markers",
-            marker=marker
+            mode=mode,
+            **kwargs
+            # marker=marker
         )
 
     def to_plotly_as_mesh3d(self, **marker):
