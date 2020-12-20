@@ -11,20 +11,19 @@ def most_photon_crystal(a_single):
 
 
 def move_arg_of_crystal(crystalID):
-    return (
-        pd.read_csv("/home/zengqinglong/optical_simu/model_80_50x50x15_system_crystal_pos_arg.csv")
-        .iloc[crystalID]
-    )
+    return pd.read_csv(
+        "/home/zengqinglong/optical_simu/model_80_50x50x15_system_crystal_pos_arg.csv"
+    ).iloc[crystalID]
 
 
 # def rotation_matrix_y(angle):
-    # return tf.convert_to_tensor(
-        # [
-            # [np.cos(angle), 0, np.sin(angle)],
-            # [0.0, 1.0, 0.0],
-            # [-np.sin(angle), 0, np.cos(angle)],
-        # ]
-    # )
+# return tf.convert_to_tensor(
+# [
+# [np.cos(angle), 0, np.sin(angle)],
+# [0.0, 1.0, 0.0],
+# [-np.sin(angle), 0, np.cos(angle)],
+# ]
+# )
 
 
 class FuncDataFrame:
@@ -78,8 +77,7 @@ class SipmArray:
         self.sipm_vertexs_x, self.sipm_vertexs_y = np.meshgrid(
             self.sipm_vertex_x, self.sipm_vertex_y
         )
-        self.sipm_vertexs_z = np.full(
-            (self.bins + 1, self.bins + 1), self.sipm_z)
+        self.sipm_vertexs_z = np.full((self.bins + 1, self.bins + 1), self.sipm_z)
 
         self.sipm_centers_x, self.sipm_centers_y = np.meshgrid(
             self.sipm_center_x, self.sipm_center_y
@@ -144,7 +142,7 @@ class Hit:
         return [tuple(row) for row in self.df.to_numpy()]
 
     def set_experiment_id(self, experiment_id):
-        self.experiment_id=experiment_id
+        self.experiment_id = experiment_id
 
     def commit(self, table_name):
         with Database().cursor() as (conn, cur):
@@ -154,25 +152,25 @@ class Hit:
                  "posX", "posY", "posZ", "localPosX", "localPosY", "localPosZ", "sourcePosX", "sourcePosY", "sourcePosZ")
                 VALUES
                 (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                self.to_records()
+                self.to_records(),
             )
             conn.commit()
 
-    @ property
+    @property
     def gamma_hits(self):
-        return Hit(FuncDataFrame(self.df).where(processName='PhotoElectric').df)
+        return Hit(FuncDataFrame(self.df).where(processName="PhotoElectric").df)
 
-    def hist2d(self, sipm: SipmArray=SipmArray()):
+    def hist2d(self, sipm: SipmArray = SipmArray()):
         return np.histogram2d(self.df.localPosX, self.df.localPosY, bins=sipm.bins)[
             0
         ].tolist()
 
-    def coincidence_sample(self, sipm: SipmArray=SipmArray()):
+    def coincidence_sample(self, sipm: SipmArray = SipmArray()):
         def get_coincidence_hist(hits, eventID, bins=sipm.bins):
-            gamma_1=hits[hits.eventID == eventID][
+            gamma_1 = hits[hits.eventID == eventID][
                 hits[hits.eventID == eventID].photonID == 1
             ]
-            gamma_2=hits[hits.eventID == eventID][
+            gamma_2 = hits[hits.eventID == eventID][
                 hits[hits.eventID == eventID].photonID == 2
             ]
 
@@ -183,9 +181,9 @@ class Hit:
 
         def assemble_samples(hits, bins=sipm.bins):
             def _assemble_single_sample(eventID):
-                sample={}
-                sample["eventID"]=eventID
-                sample={
+                sample = {}
+                sample["eventID"] = eventID
+                sample = {
                     **sample,
                     **dict(
                         hits[hits["eventID"] == eventID][
@@ -193,8 +191,8 @@ class Hit:
                         ].iloc[0]
                     ),
                 }
-                sample["counts"]=get_coincidence_hist(hits, eventID, bins=bins)
-                sample["crystalID"]=[
+                sample["counts"] = get_coincidence_hist(hits, eventID, bins=bins)
+                sample["crystalID"] = [
                     most_photon_crystal(
                         hits[hits["eventID"] == eventID][
                             hits[hits["eventID"] == eventID]["photonID"] == 1
@@ -207,10 +205,10 @@ class Hit:
                     ),
                 ]
 
-                gamma_1_move_args=move_arg_of_crystal(sample["crystalID"][0])
-                gamma_2_move_args=move_arg_of_crystal(sample["crystalID"][1])
+                gamma_1_move_args = move_arg_of_crystal(sample["crystalID"][0])
+                gamma_2_move_args = move_arg_of_crystal(sample["crystalID"][1])
 
-                sample["sipm_center_pos"]=[
+                sample["sipm_center_pos"] = [
                     sipm.local_pos.move(gamma_1_move_args[:3])
                     .rotate_ypr([0, gamma_1_move_args[3], 0])
                     .fmap(lambda i: tf.reshape(i, (sipm.bins, sipm.bins)))
@@ -234,15 +232,17 @@ class Hit:
 
         return pd.DataFrame(assemble_samples(self.df))
 
-    def single_sample(self, sipm: SipmArray=SipmArray()):
+    def single_sample(self, sipm: SipmArray = SipmArray()):
         def get_single_hist(hits, eventID, bins=sipm.bins):
-            gamma=hits[hits.eventID == eventID]
+            gamma = hits[hits.eventID == eventID]
 
         return Hit(gamma_2).hist2d()
 
     def commit_coincidentce_sample_to_database(self, experiment_id):
-        coincidence_sample = [tuple(s) for s in self.coincidence.coincidence_sample().to_numpy()]
-        experiment_coincidence_event=[
+        coincidence_sample = [
+            tuple(s) for s in self.coincidence.coincidence_sample().to_numpy()
+        ]
+        experiment_coincidence_event = [
             tuple((experiment_id, *row))
             for row in FuncDataFrame(self.coincidence.df)
             .where(processName="PhotoElectric")
@@ -251,8 +251,8 @@ class Hit:
         ]
         with Database().cursor() as (conn, cur):
             cur.executemany(
-            '''INSERT INTO coincidence_sample ("eventID","sourcePosX","sourcePosY","sourcePosZ","counts","crystalID","sipm_center_pos") VALUES (%s,%s,%s,%s,%s,%s,%s)''',
-            coincidence_sample,
+                """INSERT INTO coincidence_sample ("eventID","sourcePosX","sourcePosY","sourcePosZ","counts","crystalID","sipm_center_pos") VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+                coincidence_sample,
             )
             cur.executemany(
                 """INSERT INTO experiment_coincidence_event ("experiment_id","eventID") VALUES (%s,%s) ON CONFLICT DO NOTHING;""",
@@ -264,7 +264,10 @@ class Hit:
 class Sample(FuncDataFrame):
     def commit(self):
         self.df.to_sql(
-            con=Database().engine(), name="coincidence_sample", if_exists="append", index=False
+            con=Database().engine(),
+            name="coincidence_sample",
+            if_exists="append",
+            index=False,
         )
 
 
@@ -274,8 +277,9 @@ class GammaHit(Hit):
 
     def commit(self):
         def commit_to_experiment(experiment_id, coincidence_sample):
-            records=[
-                tuple((experiment_id, eventID)) for eventID in coincidence_sample["eventID"]
+            records = [
+                tuple((experiment_id, eventID))
+                for eventID in coincidence_sample["eventID"]
             ]
             with Database().cursor() as (conn, cur):
                 cur.executemany(
@@ -284,7 +288,7 @@ class GammaHit(Hit):
                 )
                 conn.commit()
 
-        sample_records=self.to_records()
+        sample_records = self.to_records()
 
 
 def gen_uuid4():
@@ -293,29 +297,30 @@ def gen_uuid4():
 
 class HitsEventIDMapping:
     def __init__(self, df):
-        self.df=df
+        self.df = df
 
     def get_by_key(self, key):
         return self.df[key]
 
-    @ staticmethod
-    def from_file(path='./eventID_mapping.map'):
+    @staticmethod
+    def from_file(path="./eventID_mapping.map"):
         return HitsEventIDMapping(dict(pd.read_csv(path).to_records(index=False)))
 
-    @ staticmethod
-    def build(hits, path='./eventID_mapping.map'):
+    @staticmethod
+    def build(hits, path="./eventID_mapping.map"):
         try:
-            id_map=HitsEventIDMapping.from_file().df
+            id_map = HitsEventIDMapping.from_file().df
         except FileNotFoundError as e:
-            id_map={eventID: next(gen_uuid4())
-                                  for eventID in hits["eventID"].unique()}
-            pd.DataFrame(list(id_map.items()), columns=[
-                         'eventID_num', 'eventID_uuid']).to_csv(path, index=False)
+            id_map = {
+                eventID: next(gen_uuid4()) for eventID in hits["eventID"].unique()
+            }
+            pd.DataFrame(
+                list(id_map.items()), columns=["eventID_num", "eventID_uuid"]
+            ).to_csv(path, index=False)
         return HitsEventIDMapping(id_map)
 
     def to_dict(self):
         return self.df
 
     def do_replace(self, hits):
-        hits["eventID"]=pd.Series([self.df[eventID]
-                                  for eventID in hits["eventID"]])
+        hits["eventID"] = pd.Series([self.df[eventID] for eventID in hits["eventID"]])

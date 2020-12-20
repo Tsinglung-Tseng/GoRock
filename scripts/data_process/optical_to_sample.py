@@ -1,6 +1,12 @@
 import pandas as pd
 import numpy as np
-from hotpot.geometry.system import Crystal, SipmArray, Hit, FuncDataFrame, HitsEventIDMapping
+from hotpot.geometry.system import (
+    Crystal,
+    SipmArray,
+    Hit,
+    FuncDataFrame,
+    HitsEventIDMapping,
+)
 import matplotlib.pyplot as plt
 from hotpot.geometry.primiary import Cartesian3, Database
 import plotly.graph_objects as go
@@ -30,8 +36,10 @@ HitsEventIDMapping.build(h.df).do_replace(h.df)
 
 # coincidence_sample table and experiment_coincidence_event table
 # h.gamma_hits.commit('gamma_hits')
-h.gamma_hits.df.to_csv('gamma_hits.csv', index=False)
+h.gamma_hits.df.to_csv("gamma_hits.csv", index=False)
 # h.commit_coincidentce_sample_to_database(args.experiment_id)
-coincidence_sample=h.coincidence_sample()
-coincidence_sample.to_csv('coincidence_sample.csv', index=False)
-coincidence_sample.assign(experiment_id=args.experiment_id)[['experiment_id', 'eventID']].to_csv('experiment_coincidence_event.csv', index=False)
+coincidence_sample = h.coincidence_sample()
+coincidence_sample.to_csv("coincidence_sample.csv", index=False)
+coincidence_sample.assign(experiment_id=args.experiment_id)[
+    ["experiment_id", "eventID"]
+].to_csv("experiment_coincidence_event.csv", index=False)

@@ -33,10 +33,10 @@ class Cartesian3:
     @staticmethod
     def from_tuple(TP):
         return Cartesian3(
-                 x=tf.constant([TP[0]], dtype=tf.float64),
-                 y=tf.constant([TP[1]], dtype=tf.float64),
-                 z=tf.constant([TP[2]], dtype=tf.float64),
-                )
+            x=tf.constant([TP[0]], dtype=tf.float64),
+            y=tf.constant([TP[1]], dtype=tf.float64),
+            z=tf.constant([TP[2]], dtype=tf.float64),
+        )
 
     def fmap(self, f):
         return Cartesian3(f(self.x), f(self.y), f(self.z))
@@ -158,19 +158,14 @@ class Cartesian3:
         )
 
     def to_plotly_as_mesh3d(self, **marker):
-        return go.Mesh3d(
-            x=self.x,
-            y=self.y,
-            z=self.z,
-            marker=marker
-        )
+        return go.Mesh3d(x=self.x, y=self.y, z=self.z, marker=marker)
 
     # def to_ipyvolume(self):
-        # fig = ipv.figure()
-        # scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
-        # return ipv
-        # ipv.show()
-        # ipv.quickscatter(self.x, self.y, self.z, ")
+    # fig = ipv.figure()
+    # scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
+    # return ipv
+    # ipv.show()
+    # ipv.quickscatter(self.x, self.y, self.z, ")
 
 
 class Surface:
@@ -196,44 +191,44 @@ class Surface:
 
     def to_plotly(self, **marker):
         return go.Mesh3d(
-            x = self.vertices.x,
-            y = self.vertices.y,
-            z = self.vertices.z,
-            i=[0,1],
-            j=[1,2],
-            k=[2,3],
+            x=self.vertices.x,
+            y=self.vertices.y,
+            z=self.vertices.z,
+            i=[0, 1],
+            j=[1, 2],
+            k=[2, 3],
             opacity=0.2,
-            color='lightblue',
-            **marker
+            color="lightblue",
+            **marker,
         )
 
 
 class Vector(Cartesian3):
     def __init__(self, x, y, z):
         super().__init__(
-            tf.convert_to_tensor(x, dtype=tf.float64), 
-            tf.convert_to_tensor(y, dtype=tf.float64), 
-            tf.convert_to_tensor(z, dtype=tf.float64)
+            tf.convert_to_tensor(x, dtype=tf.float64),
+            tf.convert_to_tensor(y, dtype=tf.float64),
+            tf.convert_to_tensor(z, dtype=tf.float64),
         )
-        
+
     def dot(self, other):
-        return Vector(
-            self.x * other.x,
-            self.y * other.y,
-            self.z * other.z
-        )
-    
+        return Vector(self.x * other.x, self.y * other.y, self.z * other.z)
+
     def cross(self, other):
         return Vector(
-            self.y*other.z - self.z*other.y,
-            self.z*other.x - self.x*other.z,
-            self.x*other.y - self.y*other.x
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
         )
-    
+
     @property
     def norm(self):
-        return tf.sqrt(tf.reduce_sum([tf.square(self.x), tf.square(self.y), tf.square(self.z)], axis=0))
-    
+        return tf.sqrt(
+            tf.reduce_sum(
+                [tf.square(self.x), tf.square(self.y), tf.square(self.z)], axis=0
+            )
+        )
+
     def unit(self):
         return Vector(
             self.x / self.norm,
@@ -302,46 +297,59 @@ class Segment(Pair):
         ]
 
 
-
 class Box:
     def __init__(self, surface):
         self.surface = surface
-        
+
     @staticmethod
     def from_size(x, y, z):
-        return Box([
-            Surface.from_xy_size(x, y).move([0, 0, z/2]),
-            Surface.from_xy_size(x, y).move([0, 0, -z/2]),
-            Surface.from_xy_size(x, z).rotate_ypr([np.pi/2, 0, 0]).move([0, y/2, 0]),
-            Surface.from_xy_size(x, z).rotate_ypr([np.pi/2, 0, 0]).move([0, -y/2, 0]),
-            Surface.from_xy_size(y, z).rotate_ypr([0, 0, np.pi/2]).rotate_ypr([0, np.pi/2, 0]).move([x/2, 0, 0]),
-            Surface.from_xy_size(y, z).rotate_ypr([0, 0, np.pi/2]).rotate_ypr([0, np.pi/2, 0]).move([-x/2, 0, 0]),
-        ]) 
-          
+        return Box(
+            [
+                Surface.from_xy_size(x, y).move([0, 0, z / 2]),
+                Surface.from_xy_size(x, y).move([0, 0, -z / 2]),
+                Surface.from_xy_size(x, z)
+                .rotate_ypr([np.pi / 2, 0, 0])
+                .move([0, y / 2, 0]),
+                Surface.from_xy_size(x, z)
+                .rotate_ypr([np.pi / 2, 0, 0])
+                .move([0, -y / 2, 0]),
+                Surface.from_xy_size(y, z)
+                .rotate_ypr([0, 0, np.pi / 2])
+                .rotate_ypr([0, np.pi / 2, 0])
+                .move([x / 2, 0, 0]),
+                Surface.from_xy_size(y, z)
+                .rotate_ypr([0, 0, np.pi / 2])
+                .rotate_ypr([0, np.pi / 2, 0])
+                .move([-x / 2, 0, 0]),
+            ]
+        )
+
     @staticmethod
     def from_vertices_of_surface(vertices):
-        return Box([
-            Surface(Cartesian3(x, y, z))
-            for x, y, z in
-            zip(
-            tf.split(vertices.x, 6, axis=0), 
-            tf.split(vertices.y, 6, axis=0), 
-            tf.split(vertices.z, 6, axis=0)
-        )])
-    
+        return Box(
+            [
+                Surface(Cartesian3(x, y, z))
+                for x, y, z in zip(
+                    tf.split(vertices.x, 6, axis=0),
+                    tf.split(vertices.y, 6, axis=0),
+                    tf.split(vertices.z, 6, axis=0),
+                )
+            ]
+        )
+
     @property
     def vertices(self):
-        return Cartesian3.from_matrix(tf.concat([s.vertices.to_tensor() for s in self.surface], axis=1))
-    
+        return Cartesian3.from_matrix(
+            tf.concat([s.vertices.to_tensor() for s in self.surface], axis=1)
+        )
+
     def to_plotly(self):
-        return [
-            s.to_plotly()
-            for s in self.surface
-        ]
-    
+        return [s.to_plotly() for s in self.surface]
+
     def move(self, move_vector):
-        return Box.from_vertices_of_surface(self.vertices + Cartesian3.from_tuple(move_vector))
+        return Box.from_vertices_of_surface(
+            self.vertices + Cartesian3.from_tuple(move_vector)
+        )
 
     def rotate_ypr(self, rv_ypr):
         return Box.from_vertices_of_surface(self.vertices.rotate_ypr(rv_ypr))
-

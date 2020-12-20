@@ -6,13 +6,18 @@ from hotpot.geometry.primiary import Cartesian3
 
 from hotpot.database import Database
 import os
-os.environ["DB_CONNECTION"] ="postgresql://postgres@192.168.1.96:5432/monolithic_crystal"
-os.environ["PICLUSTER_DB"] ="postgresql://picluster@192.168.1.96:5432/picluster"
 
-example_hits = pd.read_csv("/home/zengqinglong/optical_simu/5/jiqun_10mm4mm_yuanzhu_9pos/Optical_Syste/simu_80_yuanbing_400sub/sub.0/hits.csv")
+os.environ[
+    "DB_CONNECTION"
+] = "postgresql://postgres@192.168.1.96:5432/monolithic_crystal"
+os.environ["PICLUSTER_DB"] = "postgresql://picluster@192.168.1.96:5432/picluster"
 
-crystalID=0
-num_points=1000
+example_hits = pd.read_csv(
+    "/home/zengqinglong/optical_simu/5/jiqun_10mm4mm_yuanzhu_9pos/Optical_Syste/simu_80_yuanbing_400sub/sub.0/hits.csv"
+)
+
+crystalID = 0
+num_points = 1000
 
 
 def solve_rotate_and_offset(source, target):
@@ -34,18 +39,27 @@ def solve_rotate_and_offset(source, target):
     C = np.array([c_x[3], c_y[3], c_z[3]])
     return R.tolist(), C.tolist()
 
-result = {
-    'crystalID': [],
-    'R': [],
-    'C': []
-}
+
+result = {"crystalID": [], "R": [], "C": []}
 
 for crystalID in range(80):
-    local_ = FuncDataFrame(example_hits).where(crystalID=crystalID).df[['localPosX','localPosY','localPosZ']].to_numpy()[:num_points]
-    global_ = FuncDataFrame(example_hits).where(crystalID=crystalID).df[['posX','posY','posZ']].to_numpy()[:num_points]
+    local_ = (
+        FuncDataFrame(example_hits)
+        .where(crystalID=crystalID)
+        .df[["localPosX", "localPosY", "localPosZ"]]
+        .to_numpy()[:num_points]
+    )
+    global_ = (
+        FuncDataFrame(example_hits)
+        .where(crystalID=crystalID)
+        .df[["posX", "posY", "posZ"]]
+        .to_numpy()[:num_points]
+    )
     R, C = solve_rotate_and_offset(local_, global_)
-    result['crystalID'].append(crystalID)
-    result['R'].append(R)
-    result['C'].append(C)
+    result["crystalID"].append(crystalID)
+    result["R"].append(R)
+    result["C"].append(C)
 
-pd.DataFrame.from_dict(result).to_sql(con=Database().engine(), name="rotate_rc", if_exists="append", index=False)
+pd.DataFrame.from_dict(result).to_sql(
+    con=Database().engine(), name="rotate_rc", if_exists="append", index=False
+)

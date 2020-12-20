@@ -2,7 +2,6 @@ import tensorflow as tf
 
 
 def USEGPU(USING):
-    USING = 0
     physical_devices = tf.config.experimental.list_physical_devices("GPU")
     if physical_devices:
         try:

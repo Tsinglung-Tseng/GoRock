@@ -13,6 +13,8 @@ do
     cd $d
     #time root -b -q -l root2csv4.C
     #time python optical_to_sample.py hits.csv <experiment_id>
-    sbatch -w s7 sbatch_task.sh
+    #sbatch -w s7 sbatch_task.sh
+    sbatch --mem=10240 sbatch_task.sh
+    
     cd ..
 done
