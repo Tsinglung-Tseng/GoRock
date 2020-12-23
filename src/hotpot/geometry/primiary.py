@@ -98,8 +98,12 @@ class Cartesian3:
         # return Cartesian3(self.x - other.x, self.y - other.y, self.z - other.z)
         return self.op_zip(other, np.subtract)
 
-    # def __truediv__(self, other):
-        # return Cartesian3(self.x / other, self.y / other, self.z / other)
+    def __mul__(self, op_num):
+        mul_num = lambda x: np.multiply(x, op_num)
+        return self.fmap(mul_num)
+
+    def __truediv__(self, other):
+        return Cartesian3(self.x / other, self.y / other, self.z / other)
 
     def divide(self, other):
         return self.op_zip(other, np.divide)
@@ -210,6 +214,70 @@ class Cartesian3:
         z_view.set_title("z_view")
 
         plt.show()
+
+
+class Segment:
+    def __init__(self, fst: Cartesian3, snd: Cartesian3):
+        self.fst = fst
+        self.snd = snd
+        
+    def __repr__(self):
+        return f"""Pair: <fst: {self.fst}; snd: {self.snd}>"""
+    
+    def hmap(self):
+        pass
+    
+    def seg_length(self):
+        return self.fst.distance_to(self.snd)
+    
+    def direct_vector(self):
+        return (self.fst-self.snd).fmap(lambda i: i/self.seg_length().numpy())
+    
+    @property
+    def middle_point(self):
+        return (self.fst + self.snd)/2
+    
+    def to_listmode(self):
+        return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
+    
+    def to_plotly_line(self, line_length=600, mode="lines", **kwargs):
+        tmp = []
+
+        lm = Pair(
+            self.middle_point + self.direct_vector()*line_length/2,
+            self.middle_point - self.direct_vector()*line_length/2,
+        ).to_listmode()
+        
+        for i in range(lm.shape[2]):
+            x,y,z = lm[:,:,i].T
+            tmp.append(
+                    go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode=mode,
+                    **kwargs
+                )
+            )
+        return tmp
+    
+    def to_plotly_segment(self, mode="markers+lines", **kwargs):
+        tmp = []
+
+        lm = gamma_pair.to_listmode()
+        for i in range(lm.shape[2]):
+            x,y,z = lm[:,:,i].T
+            tmp.append(
+                    go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode=mode,
+                    **kwargs
+                )
+            )
+        return tmp
+
 # class Cartesian3:
     # def __init__(self, x, y, z):
         # self.x = tf.constant(x)
@@ -486,21 +554,84 @@ class PairCartesian3(Pair, Cartesian3):
             # )
         # ]
 
-class Segment:
-    def __init__(self, pair):
-        self.pair = pair
+# class Segment:
+    # def __init__(self, pair):
+        # self.pair = pair
         
-    def to_plotly(self, mode="markers+lines", **kwargs):
-        x=self.pair.reshape([2,3]).T[0]
-        y=self.pair.reshape([2,3]).T[1]
-        z=self.pair.reshape([2,3]).T[2]
-        return go.Scatter3d(
-            x=x,
-            y=y,
-            z=z,
-            mode=mode,
-            **kwargs
-        )
+    # def to_plotly(self, mode="markers+lines", **kwargs):
+        # x=self.pair.reshape([2,3]).T[0]
+        # y=self.pair.reshape([2,3]).T[1]
+        # z=self.pair.reshape([2,3]).T[2]
+        # return go.Scatter3d(
+            # x=x,
+            # y=y,
+            # z=z,
+            # mode=mode,
+            # **kwargs
+        # )
+
+
+class Pair:
+    def __init__(self, fst: Cartesian3, snd: Cartesian3):
+        self.fst = fst
+        self.snd = snd
+
+    def __repr__(self):
+        return f"""Pair: <fst: {self.fst}; snd: {self.snd}>"""
+
+    def hmap(self):
+        pass
+
+    def seg_length(self):
+        return self.fst.distance_to(self.snd)
+
+    def direct_vector(self):
+        return (self.fst-self.snd).fmap(lambda i: i/self.seg_length().numpy())
+
+    @property
+    def middle_point(self):
+        return (self.fst + self.snd)/2
+
+    def to_listmode(self):
+        return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
+
+    def to_plotly_line(self, line_length=600, mode="lines", **kwargs):
+        tmp = []
+
+        lm = Pair(
+            self.middle_point + self.direct_vector()*line_length/2,
+            self.middle_point - self.direct_vector()*line_length/2,
+        ).to_listmode()
+
+        for i in range(lm.shape[2]):
+            x,y,z = lm[:,:,i].T
+            tmp.append(
+                    go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode=mode,
+                    **kwargs
+                )
+            )
+        return tmp
+
+    def to_plotly_segment(self, mode="markers+lines", **kwargs):
+        tmp = []
+
+        lm = gamma_pair.to_listmode()
+        for i in range(lm.shape[2]):
+            x,y,z = lm[:,:,i].T
+            tmp.append(
+                    go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode=mode,
+                    **kwargs
+                )
+            )
+        return tmp
 
 
 class Box:
