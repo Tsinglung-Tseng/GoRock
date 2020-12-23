@@ -16,16 +16,6 @@ def move_arg_of_crystal(crystalID):
     ).iloc[crystalID]
 
 
-# def rotation_matrix_y(angle):
-# return tf.convert_to_tensor(
-# [
-# [np.cos(angle), 0, np.sin(angle)],
-# [0.0, 1.0, 0.0],
-# [-np.sin(angle), 0, np.cos(angle)],
-# ]
-# )
-
-
 class FuncDataFrame:
     def __init__(self, df):
         self.df = df
@@ -38,11 +28,6 @@ class FuncDataFrame:
 
     def filter(self, key_list):
         return FuncDataFrame(self.df[key_list])
-
-
-class Crystal:
-    # TODO: incase different size of crystal is needed
-    pass
 
 
 class SipmArray:

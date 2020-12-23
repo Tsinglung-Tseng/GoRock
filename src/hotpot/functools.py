@@ -18,6 +18,12 @@ class FuncDataFrame:
     def filter(self, key_list):
         return FuncDataFrame(self.df[key_list])
 
+    def select(self, labels):
+        return FuncDataFrame(self.df[labels]) 
+    
+    def to_numpy(self):
+        return self.df.to_numpy()
+
 
 class FuncList:
     def __init__(self, ldata):

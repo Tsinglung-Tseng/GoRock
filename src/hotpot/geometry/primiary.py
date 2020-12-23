@@ -2,6 +2,8 @@ import plotly.graph_objects as go
 import numpy as np
 import ipyvolume as ipv
 import tensorflow as tf
+import matplotlib.pyplot as plt
+from functools import partial
 from ..database import Database
 
 # def point_close_enough(c: Cartisian3):
@@ -20,72 +22,101 @@ def split_raw_df_into_even_odd_pairs(raw_df):
     return (raw_df[0::2], raw_df[1::2])
 
 
+def _convert_type_if_not_nparray(an_array):
+    if not isinstance(an_array, np.ndarray):
+        return np.array(an_array, dtype=np.float32)
+    else:
+        return an_array            
+
+
 class Cartesian3:
     def __init__(self, x, y, z):
-        self.x = tf.constant(x)
-        self.y = tf.constant(y)
-        self.z = tf.constant(z)
+        self.x = x
+        self.y = y
+        self.z = z
+    
+    def fmap(self, func):
+        return self.__class__(
+            x=func(self.x),
+            y=func(self.y),
+            z=func(self.z)
+        )
+
+    def hmap(self, func):
+        """
+        Map function horizontally on each element of param arrays.
+        """
+        pass
+
+    def op_zip(self, other, op):
+        return self.__class__.from_xyz(
+            x=op(self.x, other.x),
+            y=op(self.y, other.y),
+            z=op(self.z, other.z)
+        )
+
+    @staticmethod
+    def from_xyz(x, y, z):
+        return Cartesian3(x, y, z).fmap(_convert_type_if_not_nparray)
+
+    @staticmethod
+    def from_tuple3s(TPs):
+        return Cartesian3.from_xyz(
+            x=TPs[:,0],
+            y=TPs[:,1],
+            z=TPs[:,2]
+        )
 
     @staticmethod
     def from_matrix(m):
-        return Cartesian3(m[0], m[1], m[2])
-
-    @staticmethod
-    def from_tuple(TP):
-        return Cartesian3(
-            x=tf.constant([TP[0]], dtype=tf.float64),
-            y=tf.constant([TP[1]], dtype=tf.float64),
-            z=tf.constant([TP[2]], dtype=tf.float64),
+        return Cartesian3.from_xyz(
+            x=m[0],
+            y=m[1], 
+            z=m[2]
         )
+    
+    @classmethod
+    def local_pos_from_hits(cls, hits):
+        return Cartesian3.from_xyz(hits.localPosX, hits.localPosY, hits.localPosZ)
 
-    def fmap(self, f):
-        return Cartesian3(f(self.x), f(self.y), f(self.z))
-
-    def zip_op(self, op, other):
-        return Cartesian3(op(self.x, other.x), op(self.y, other.y), op(self.z, other.z))
+    @classmethod
+    def pos_from_hits(cls, hits):
+        return Cartesian3.from_xyz(hits.posX, hits.posY, hits.posZ)
+    
+    @classmethod
+    def source_from_hits(cls, hits):
+        return Cartesian3.from_xyz(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
 
     def __repr__(self):
         return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
 
     def __add__(self, other):
-        return Cartesian3(self.x + other.x, self.y + other.y, self.z + other.z)
+        # return Cartesian3(self.x + other.x, self.y + other.y, self.z + other.z)
+        return self.op_zip(other, np.add)
 
     def __sub__(self, other):
-        return Cartesian3(self.x - other.x, self.y - other.y, self.z - other.z)
+        # return Cartesian3(self.x - other.x, self.y - other.y, self.z - other.z)
+        return self.op_zip(other, np.subtract)
 
-    def __truediv__(self, other):
-        return Cartesian3(self.x / other, self.y / other, self.z / other)
+    # def __truediv__(self, other):
+        # return Cartesian3(self.x / other, self.y / other, self.z / other)
 
-    @classmethod
-    def from_pattern(cls, raw, pattern):
-        return Cartesian3(
-            x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
-        )
+    def divide(self, other):
+        return self.op_zip(other, np.divide)
 
-    @staticmethod
-    def from_tuple3s(tuple3s):
-        t = np.array(tuple3s, dtype=np.float64).T
-        return Cartesian3(
-            x=t[0],
-            y=t[1],
-            z=t[2],
-        )
-
-    @classmethod
-    def local_pos_from_hits(cls, hits):
-        return Cartesian3(hits.localPosX, hits.localPosY, hits.localPosZ)
-
-    @classmethod
-    def pos_from_hits(cls, hits):
-        return Cartesian3(hits.posX, hits.posY, hits.posZ)
-
-    @classmethod
-    def source_from_hits(cls, hits):
-        return Cartesian3(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
 
     def move(self, by_vector):
         return Cartesian3(
             self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
+        )
+    
+    def concat(self, other):
+        def _np_concat():
+            return partial(np.concatenate, axis=0)
+        return self.__class__.from_xyz(
+            x=_np_concat()([self.x, other.x]),
+            y=_np_concat()([self.y, other.y]),
+            z=_np_concat()([self.z, other.z]),
         )
 
     def rotate_ypr(self, rv_ypr):
@@ -154,18 +185,177 @@ class Cartesian3:
             z=self.z,
             mode=mode,
             **kwargs
-            # marker=marker
         )
 
     def to_plotly_as_mesh3d(self, **marker):
-        return go.Mesh3d(x=self.x, y=self.y, z=self.z, marker=marker)
+        return go.Mesh3d(
+            x=self.x,
+            y=self.y,
+            z=self.z,
+            marker=marker
+        )
 
-    # def to_ipyvolume(self):
-    # fig = ipv.figure()
-    # scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
-    # return ipv
-    # ipv.show()
-    # ipv.quickscatter(self.x, self.y, self.z, ")
+    def view(self, figsize=(30,10)):
+        plt.figure(figsize=figsize)
+        x_view = plt.subplot(131, aspect='equal')
+        x_view.plot(self.y, self.z,'.')
+        x_view.set_title("x_view")
+
+        y_view = plt.subplot(132, aspect='equal', sharex=x_view)
+        y_view.plot(self.x, self.z,'.')
+        y_view.set_title("y_view")
+
+        z_view = plt.subplot(133, aspect='equal', sharex=x_view)
+        z_view.plot(self.x, self.y,'.')
+        z_view.set_title("z_view")
+
+        plt.show()
+# class Cartesian3:
+    # def __init__(self, x, y, z):
+        # self.x = tf.constant(x)
+        # self.y = tf.constant(y)
+        # self.z = tf.constant(z)
+
+    # @staticmethod
+    # def from_matrix(m):
+        # return Cartesian3(m[0], m[1], m[2])
+
+    # @staticmethod
+    # def from_tuple(TP):
+        # return Cartesian3(
+            # x=tf.constant([TP[0]], dtype=tf.float64),
+            # y=tf.constant([TP[1]], dtype=tf.float64),
+            # z=tf.constant([TP[2]], dtype=tf.float64),
+        # )
+
+    # def fmap(self, f):
+        # return Cartesian3(f(self.x), f(self.y), f(self.z))
+
+    # def zip_op(self, op, other):
+        # return Cartesian3(op(self.x, other.x), op(self.y, other.y), op(self.z, other.z))
+
+    # def __repr__(self):
+        # return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+
+    # def __add__(self, other):
+        # return Cartesian3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    # def __sub__(self, other):
+        # return Cartesian3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    # def __truediv__(self, other):
+        # return Cartesian3(self.x / other, self.y / other, self.z / other)
+
+    # @classmethod
+    # def from_pattern(cls, raw, pattern):
+        # return Cartesian3(
+            # x=raw[pattern + "x"], y=raw[pattern + "y"], z=raw[pattern + "z"]
+        # )
+
+    # @staticmethod
+    # def from_tuple3s(tuple3s):
+        # t = np.array(tuple3s, dtype=np.float64).T
+        # return Cartesian3(
+            # x=t[0],
+            # y=t[1],
+            # z=t[2],
+        # )
+
+    # @classmethod
+    # def local_pos_from_hits(cls, hits):
+        # return Cartesian3(hits.localPosX, hits.localPosY, hits.localPosZ)
+
+    # @classmethod
+    # def pos_from_hits(cls, hits):
+        # return Cartesian3(hits.posX, hits.posY, hits.posZ)
+
+    # @classmethod
+    # def source_from_hits(cls, hits):
+        # return Cartesian3(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
+
+    # def move(self, by_vector):
+        # return Cartesian3(
+            # self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
+        # )
+
+    # def rotate_ypr(self, rv_ypr):
+        # def rotation_matrix_x(angle):
+            # return tf.convert_to_tensor(
+                # [
+                    # [1.0, 0.0, 0.0],
+                    # [0.0, np.cos(angle), -np.sin(angle)],
+                    # [0.0, np.sin(angle), np.cos(angle)],
+                # ]
+            # )
+
+        # def rotation_matrix_y(angle):
+            # return tf.convert_to_tensor(
+                # [
+                    # [np.cos(angle), 0, np.sin(angle)],
+                    # [0.0, 1.0, 0.0],
+                    # [-np.sin(angle), 0, np.cos(angle)],
+                # ]
+            # )
+
+        # def rotation_matrix_z(angle):
+            # return tf.convert_to_tensor(
+                # [
+                    # [np.cos(angle), -np.sin(angle), 0.0],
+                    # [np.sin(angle), np.cos(angle), 0.0],
+                    # [0.0, 0.0, 1.0],
+                # ]
+            # )
+
+        # return (
+            # self.left_matmul(rotation_matrix_x(rv_ypr[0]))
+            # .left_matmul(rotation_matrix_y(rv_ypr[1]))
+            # .left_matmul(rotation_matrix_z(rv_ypr[2]))
+        # )
+
+    # def left_matmul(self, m):
+        # result = np.matmul(m, self.to_matrix())
+        # return Cartesian3.from_matrix(result)
+
+    # def distance_to(self, other):
+        # diff = self - other
+        # return tf.sqrt(tf.reduce_sum(tf.square(diff.to_tensor()), axis=0))
+
+    # def to_matrix(self):
+        # return tf.stack([self.x, self.y, self.z], axis=0)
+
+    # def to_tensor(self):
+        # return tf.stack([tf.constant(self.x), tf.constant(self.y), tf.constant(self.z)])
+
+    # def to_spherical(self):
+        # return Spherical(
+            # r=tf.math.sqrt(
+                # sum([tf.square(self.x), tf.square(self.y), tf.square(self.z)])
+            # ),
+            # theta=tf.math.atan2(self.y, self.x),
+            # phi=tf.math.atan2(
+                # tf.math.sqrt(tf.square(self.x) + tf.square(self.y)), self.z
+            # ),
+        # )
+
+    # def to_plotly(self, mode="markers", **kwargs):
+        # return go.Scatter3d(
+            # x=self.x,
+            # y=self.y,
+            # z=self.z,
+            # mode=mode,
+            # **kwargs
+            # # marker=marker
+        # )
+
+    # def to_plotly_as_mesh3d(self, **marker):
+        # return go.Mesh3d(x=self.x, y=self.y, z=self.z, marker=marker)
+
+    # # def to_ipyvolume(self):
+    # # fig = ipv.figure()
+    # # scatter = ipv.scatter(self.x, self.y, self.z, size=1, marker="sphere")
+    # # return ipv
+    # # ipv.show()
+    # # ipv.quickscatter(self.x, self.y, self.z, ")
 
 
 class Surface:
@@ -278,23 +468,39 @@ class PairCartesian3(Pair, Cartesian3):
         )
 
 
-class Segment(Pair):
-    def __init__(self, car: Cartesian3, cdr: Cartesian3):
-        self.car = car
-        self.cdr = cdr
+# class Segment(Pair):
+    # def __init__(self, car: Cartesian3, cdr: Cartesian3):
+        # self.car = car
+        # self.cdr = cdr
 
-    def to_plotly(self):
-        return [
-            go.Scatter3d(x=[x0, x1], y=[y0, y1], z=[z0, z1], mode="lines")
-            for x0, x1, y0, y1, z0, z1 in zip(
-                np.array(self.car.x).flat,
-                np.array(self.cdr.x).flat,
-                np.array(self.car.y).flat,
-                np.array(self.cdr.y).flat,
-                np.array(self.car.z).flat,
-                np.array(self.cdr.z).flat,
-            )
-        ]
+    # def to_plotly(self):
+        # return [
+            # go.Scatter3d(x=[x0, x1], y=[y0, y1], z=[z0, z1], mode="lines")
+            # for x0, x1, y0, y1, z0, z1 in zip(
+                # np.array(self.car.x).flat,
+                # np.array(self.cdr.x).flat,
+                # np.array(self.car.y).flat,
+                # np.array(self.cdr.y).flat,
+                # np.array(self.car.z).flat,
+                # np.array(self.cdr.z).flat,
+            # )
+        # ]
+
+class Segment:
+    def __init__(self, pair):
+        self.pair = pair
+        
+    def to_plotly(self, mode="markers+lines", **kwargs):
+        x=self.pair.reshape([2,3]).T[0]
+        y=self.pair.reshape([2,3]).T[1]
+        z=self.pair.reshape([2,3]).T[2]
+        return go.Scatter3d(
+            x=x,
+            y=y,
+            z=z,
+            mode=mode,
+            **kwargs
+        )
 
 
 class Box:
@@ -353,3 +559,4 @@ class Box:
 
     def rotate_ypr(self, rv_ypr):
         return Box.from_vertices_of_surface(self.vertices.rotate_ypr(rv_ypr))
+

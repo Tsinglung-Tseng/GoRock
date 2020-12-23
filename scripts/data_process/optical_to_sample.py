@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from hotpot.geometry.system import (
-    Crystal,
     SipmArray,
     Hit,
     FuncDataFrame,
