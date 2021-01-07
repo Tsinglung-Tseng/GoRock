@@ -131,3 +131,15 @@ class FuncArray:
             shrinked_size,
         )
         return FuncArray(self.to_numpy().reshape(result_dim))
+
+
+class FuncNNLayer:
+    def __init__(self, layer):
+        self.layer = layer
+
+    def append_next_layer(self, l):
+        return FuncNNLayer(l(self.layer))
+
+    def __call__(self, *args):
+        return self.layer(*args)
+

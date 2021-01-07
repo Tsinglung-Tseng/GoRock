@@ -7,25 +7,25 @@ def point_line_distance(y_true, y_pred):
     A = y_pred[:,3:]
     B = y_pred[:,:3]
 
-    mag = lambda x: tf.sqrt(tf.math.reduce_sum(x*x, axis=-1))
+    mag = lambda x: tf.sqrt(tf.math.reduce_sum(x*x, xis=-1))
     return mag(tf.linalg.cross((B-A), (source-A)))/mag(B-A)
 
 
-def point_line_distance_with_limitation(y_true, y_pred):
+# def point_line_distance_with_limitation(y_true, y_pred):
 
-    def _is_excedes_sys(p):
-        rrr = tf.square(p[:,0]) + tf.square(p[:,2])
-        return rrr<44100 | rrr>50625 | p[:,0]>115 | p[:,0]<-115
+    # def _is_excedes_sys(p):
+        # rrr = tf.square(p[:,0]) + tf.square(p[:,2])
+        # return rrr<44100 | rrr>50625 | p[:,0]>115 | p[:,0]<-115
 
-    source = y_true
-    A = y_pred[:,3:]
-    B = y_pred[:,:3]
+    # source = y_true
+    # A = y_pred[:,3:]
+    # B = y_pred[:,:3]
 
-    if _is_excedes_sys(A) | _is_excedes_sys(B):
-        return 1000
+    # if _is_excedes_sys(A) | _is_excedes_sys(B):
+        # return 1000
 
-    mag = lambda x: tf.sqrt(tf.math.reduce_sum(x*x, axis=-1))
-    return mag(tf.linalg.cross((B-A), (source-A)))/mag(B-A)
+    # mag = lambda x: tf.sqrt(tf.math.reduce_sum(x*x, axis=-1))
+    # return mag(tf.linalg.cross((B-A), (source-A)))/mag(B-A)
 
 
 def point_line_distance_with_limitation(y_true, y_pred):

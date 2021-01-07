@@ -1,5 +1,6 @@
 import tensorflow as tf
 from .loss import point_line_distance, point_line_distance_with_limitation
+from .functools import FuncNNLayer
 
 
 tf.keras.backend.set_image_data_format('channels_last')
@@ -41,3 +42,6 @@ model_res_limit_loss.compile(
     loss=point_line_distance_with_limitation,
 #     metrics=[tf.keras.metrics.MeanAbsoluteError()]
 )
+
+
+

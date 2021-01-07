@@ -49,7 +49,13 @@ class Cartesian3:
         return Cartesian3(x, y, z).fmap(_convert_type_if_not_nparray)
 
     @staticmethod
+    def from_tuple(t):
+        return Cartesian3(*t)
+
+
+    @staticmethod
     def from_tuple3s(TPs):
+        TPs = _convert_type_if_not_nparray(TPs)
         return Cartesian3.from_xyz(
             x=TPs[:,0],
             y=TPs[:,1],
@@ -295,7 +301,8 @@ class Surface:
             i=[0, 1],
             j=[1, 2],
             k=[2, 3],
-            opacity=0.2,
+            # opacity=0.2,
+            # color='rgba(255,0,255, 0.4)',
             color="lightblue",
             **marker,
         )
