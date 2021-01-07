@@ -3,10 +3,13 @@ from hotpot.dataset import AngerDataSet
 
 from hotpot.database import Database
 import os
-os.environ["DB_CONNECTION"] ="postgresql://postgres@192.168.1.96:5432/monolithic_crystal"
-os.environ["PICLUSTER_DB"] ="postgresql://picluster@192.168.1.96:5432/picluster"
 
-sample_stmt=f"""
+os.environ[
+    "DB_CONNECTION"
+] = "postgresql://postgres@192.168.1.96:5432/monolithic_crystal"
+os.environ["PICLUSTER_DB"] = "postgresql://picluster@192.168.1.96:5432/picluster"
+
+sample_stmt = f"""
     SELECT
 	cs.*,
 	lmwl.gamma_1_x,
@@ -38,11 +41,11 @@ sipm_counts_n_position = agds.sipm_counts_n_position
 anger_infered = agds.anger_infered
 source_position = agds.source_position
 
-with open(f'sipm_counts_n_position.npy', 'wb') as f:
+with open(f"sipm_counts_n_position.npy", "wb") as f:
     np.save(f, valid_sipm_counts_n_position)
 
-with open(f'anger_infered.npy', 'wb') as f:
+with open(f"anger_infered.npy", "wb") as f:
     np.save(f, valid_anger_infered)
 
-with open(f'source_position.npy', 'wb') as f:
+with open(f"source_position.npy", "wb") as f:
     np.save(f, valid_source_position)

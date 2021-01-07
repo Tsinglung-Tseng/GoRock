@@ -7,8 +7,7 @@ class LossHistory(tf.keras.callbacks.Callback):
         self.val_losses = []
 
     def on_batch_end(self, batch, logs={}):
-        self.losses.append(logs.get('loss'))
+        self.losses.append(logs.get("loss"))
 
     def on_epoch_end(self, batch, logs={}):
-        self.val_losses.append(logs.get('val_loss'))
-
+        self.val_losses.append(logs.get("val_loss"))

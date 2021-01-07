@@ -19,8 +19,8 @@ class FuncDataFrame:
         return FuncDataFrame(self.df[key_list])
 
     def select(self, labels):
-        return FuncDataFrame(self.df[labels]) 
-    
+        return FuncDataFrame(self.df[labels])
+
     def to_numpy(self):
         return self.df.to_numpy()
 
@@ -142,4 +142,3 @@ class FuncNNLayer:
 
     def __call__(self, *args):
         return self.layer(*args)
-

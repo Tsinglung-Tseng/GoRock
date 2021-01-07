@@ -15,7 +15,7 @@ def _convert_type_if_not_nparray(an_array):
     if not isinstance(an_array, np.ndarray):
         return np.array(an_array, dtype=np.float32)
     else:
-        return an_array            
+        return an_array
 
 
 class Cartesian3:
@@ -23,13 +23,9 @@ class Cartesian3:
         self.x = x
         self.y = y
         self.z = z
-    
+
     def fmap(self, func):
-        return self.__class__(
-            x=func(self.x),
-            y=func(self.y),
-            z=func(self.z)
-        )
+        return self.__class__(x=func(self.x), y=func(self.y), z=func(self.z))
 
     def hmap(self, func):
         """
@@ -39,9 +35,7 @@ class Cartesian3:
 
     def op_zip(self, other, op):
         return self.__class__.from_xyz(
-            x=op(self.x, other.x),
-            y=op(self.y, other.y),
-            z=op(self.z, other.z)
+            x=op(self.x, other.x), y=op(self.y, other.y), z=op(self.z, other.z)
         )
 
     @staticmethod
@@ -52,24 +46,15 @@ class Cartesian3:
     def from_tuple(t):
         return Cartesian3(*t)
 
-
     @staticmethod
     def from_tuple3s(TPs):
         TPs = _convert_type_if_not_nparray(TPs)
-        return Cartesian3.from_xyz(
-            x=TPs[:,0],
-            y=TPs[:,1],
-            z=TPs[:,2]
-        )
+        return Cartesian3.from_xyz(x=TPs[:, 0], y=TPs[:, 1], z=TPs[:, 2])
 
     @staticmethod
     def from_matrix(m):
-        return Cartesian3.from_xyz(
-            x=m[0],
-            y=m[1], 
-            z=m[2]
-        )
-    
+        return Cartesian3.from_xyz(x=m[0], y=m[1], z=m[2])
+
     @classmethod
     def local_pos_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.localPosX, hits.localPosY, hits.localPosZ)
@@ -77,7 +62,7 @@ class Cartesian3:
     @classmethod
     def pos_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.posX, hits.posY, hits.posZ)
-    
+
     @classmethod
     def source_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
@@ -101,15 +86,15 @@ class Cartesian3:
     def divide(self, other):
         return self.op_zip(other, np.divide)
 
-
     def move(self, by_vector):
         return Cartesian3(
             self.x + by_vector[0], self.y + by_vector[1], self.z + by_vector[2]
         )
-    
+
     def concat(self, other):
         def _np_concat():
             return partial(np.concatenate, axis=0)
+
         return self.__class__.from_xyz(
             x=_np_concat()([self.x, other.x]),
             y=_np_concat()([self.y, other.y]),
@@ -176,34 +161,23 @@ class Cartesian3:
         )
 
     def to_plotly(self, mode="markers", **kwargs):
-        return go.Scatter3d(
-            x=self.x,
-            y=self.y,
-            z=self.z,
-            mode=mode,
-            **kwargs
-        )
+        return go.Scatter3d(x=self.x, y=self.y, z=self.z, mode=mode, **kwargs)
 
     def to_plotly_as_mesh3d(self, **marker):
-        return go.Mesh3d(
-            x=self.x,
-            y=self.y,
-            z=self.z,
-            marker=marker
-        )
+        return go.Mesh3d(x=self.x, y=self.y, z=self.z, marker=marker)
 
-    def view(self, figsize=(30,10)):
+    def view(self, figsize=(30, 10)):
         plt.figure(figsize=figsize)
-        x_view = plt.subplot(131, aspect='equal')
-        x_view.plot(self.y, self.z,'.')
+        x_view = plt.subplot(131, aspect="equal")
+        x_view.plot(self.y, self.z, ".")
         x_view.set_title("x_view")
 
-        y_view = plt.subplot(132, aspect='equal', sharex=x_view)
-        y_view.plot(self.x, self.z,'.')
+        y_view = plt.subplot(132, aspect="equal", sharex=x_view)
+        y_view.plot(self.x, self.z, ".")
         y_view.set_title("y_view")
 
-        z_view = plt.subplot(133, aspect='equal', sharex=x_view)
-        z_view.plot(self.x, self.y,'.')
+        z_view = plt.subplot(133, aspect="equal", sharex=x_view)
+        z_view.plot(self.x, self.y, ".")
         z_view.set_title("z_view")
 
         plt.show()
@@ -213,62 +187,46 @@ class Segment:
     def __init__(self, fst: Cartesian3, snd: Cartesian3):
         self.fst = fst
         self.snd = snd
-        
+
     def __repr__(self):
         return f"""Pair: <fst: {self.fst}; snd: {self.snd}>"""
-    
+
     def hmap(self):
         pass
-    
+
     def seg_length(self):
         return self.fst.distance_to(self.snd)
-    
+
     def direct_vector(self):
-        return (self.fst-self.snd).fmap(lambda i: i/self.seg_length().numpy())
-    
+        return (self.fst - self.snd).fmap(lambda i: i / self.seg_length().numpy())
+
     @property
     def middle_point(self):
-        return (self.fst + self.snd)/2
-    
+        return (self.fst + self.snd) / 2
+
     def to_listmode(self):
         return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
-    
+
     def to_plotly_line(self, line_length=600, mode="lines", **kwargs):
         tmp = []
 
         lm = Pair(
-            self.middle_point + self.direct_vector()*line_length/2,
-            self.middle_point - self.direct_vector()*line_length/2,
+            self.middle_point + self.direct_vector() * line_length / 2,
+            self.middle_point - self.direct_vector() * line_length / 2,
         ).to_listmode()
-        
+
         for i in range(lm.shape[2]):
-            x,y,z = lm[:,:,i].T
-            tmp.append(
-                    go.Scatter3d(
-                    x=x,
-                    y=y,
-                    z=z,
-                    mode=mode,
-                    **kwargs
-                )
-            )
+            x, y, z = lm[:, :, i].T
+            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
         return tmp
-    
+
     def to_plotly_segment(self, mode="markers+lines", **kwargs):
         tmp = []
 
         lm = gamma_pair.to_listmode()
         for i in range(lm.shape[2]):
-            x,y,z = lm[:,:,i].T
-            tmp.append(
-                    go.Scatter3d(
-                    x=x,
-                    y=y,
-                    z=z,
-                    mode=mode,
-                    **kwargs
-                )
-            )
+            x, y, z = lm[:, :, i].T
+            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
         return tmp
 
 
@@ -379,7 +337,7 @@ class Pair:
             gamma_pair.middle_point.to_plotly(mode="markers", marker=dict(size=2, color='purple')),
             gamma_1.to_plotly(mode="markers", marker=dict(size=5, color='red')),
             gamma_2.to_plotly(mode="markers", marker=dict(size=5, color='blue')),
-        ])        
+        ])
         """
         self.fst = fst
         self.snd = snd
@@ -394,11 +352,11 @@ class Pair:
         return self.fst.distance_to(self.snd)
 
     def direct_vector(self):
-        return (self.fst-self.snd).fmap(lambda i: i/self.seg_length().numpy())
+        return (self.fst - self.snd).fmap(lambda i: i / self.seg_length().numpy())
 
     @property
     def middle_point(self):
-        return (self.fst + self.snd)/2
+        return (self.fst + self.snd) / 2
 
     def to_listmode(self):
         return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
@@ -407,21 +365,13 @@ class Pair:
         tmp = []
 
         lm = Pair(
-            self.middle_point + self.direct_vector()*line_length/2,
-            self.middle_point - self.direct_vector()*line_length/2,
+            self.middle_point + self.direct_vector() * line_length / 2,
+            self.middle_point - self.direct_vector() * line_length / 2,
         ).to_listmode()
 
         for i in range(lm.shape[2]):
-            x,y,z = lm[:,:,i].T
-            tmp.append(
-                    go.Scatter3d(
-                    x=x,
-                    y=y,
-                    z=z,
-                    mode=mode,
-                    **kwargs
-                )
-            )
+            x, y, z = lm[:, :, i].T
+            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
         return tmp
 
     def to_plotly_segment(self, mode="markers+lines", **kwargs):
@@ -429,16 +379,8 @@ class Pair:
 
         lm = gamma_pair.to_listmode()
         for i in range(lm.shape[2]):
-            x,y,z = lm[:,:,i].T
-            tmp.append(
-                    go.Scatter3d(
-                    x=x,
-                    y=y,
-                    z=z,
-                    mode=mode,
-                    **kwargs
-                )
-            )
+            x, y, z = lm[:, :, i].T
+            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
         return tmp
 
 
@@ -498,4 +440,3 @@ class Box:
 
     def rotate_ypr(self, rv_ypr):
         return Box.from_vertices_of_surface(self.vertices.rotate_ypr(rv_ypr))
-
