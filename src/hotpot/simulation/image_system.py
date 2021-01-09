@@ -20,6 +20,10 @@ class ImageSystem(MAC):
     def from_file(path):
         return ImageSystem(MAC.from_file(path))
 
+    @staticmethod
+    def from_database(config_id):
+        return ImageSystem(MAC.from_database(config_id))
+
     @property
     def crystal_size(self):
         return [

@@ -102,39 +102,63 @@ class ModelTuner:
 class Train:
     def __init__(self, train_id):
         self.train_id = train_id
-    
+
     @property
     def work_dir(self):
-        return Database().read_sql(f"""
+        return (
+            Database()
+            .read_sql(
+                f"""
         SELECT
             work_dir
         FROM
             train
         WHERE
-            id = {self.train_id};""").to_numpy()[0][0]
-    
+            id = {self.train_id};"""
+            )
+            .to_numpy()[0][0]
+        )
+
     @property
     def all_files_on_work_dir(self):
         return list(os.walk(self.work_dir))[0][2]
-    
+
     @property
     def loss_files(self):
         def get_file_index(fname):
-            return int(fname.split('.')[0].split('_')[-1])
-        return FuncList(sorted(
-            FuncList(self.all_files_on_work_dir)
-            .map(lambda i: [re.findall('^loss_step.*\.npy$', i), i])
-            .filter(lambda i: i[0]!=[])
-            .map(lambda i: [get_file_index(i[1]), i[1]]).to_list()
-        , key=lambda i: i[0])).map(lambda i: "/".join([self.work_dir, i[-1]])).to_list()
-    
+            return int(fname.split(".")[0].split("_")[-1])
+
+        return (
+            FuncList(
+                sorted(
+                    FuncList(self.all_files_on_work_dir)
+                    .map(lambda i: [re.findall("^loss_step.*\.npy$", i), i])
+                    .filter(lambda i: i[0] != [])
+                    .map(lambda i: [get_file_index(i[1]), i[1]])
+                    .to_list(),
+                    key=lambda i: i[0],
+                )
+            )
+            .map(lambda i: "/".join([self.work_dir, i[-1]]))
+            .to_list()
+        )
+
     @property
     def net_infered(self):
         def get_file_index(fname):
-            return int(fname.split('.')[0].split('_')[-1])
-        return FuncList(sorted(
-            FuncList(self.all_files_on_work_dir)
-            .map(lambda i: [re.findall('^net_infered.*\.npy$', i), i])
-            .filter(lambda i: i[0]!=[])
-            .map(lambda i: [get_file_index(i[1]), i[1]]).to_list()
-        , key=lambda i: i[0])).map(lambda i: "/".join([self.work_dir, i[-1]])).to_list()
+            return int(fname.split(".")[0].split("_")[-1])
+
+        return (
+            FuncList(
+                sorted(
+                    FuncList(self.all_files_on_work_dir)
+                    .map(lambda i: [re.findall("^net_infered.*\.npy$", i), i])
+                    .filter(lambda i: i[0] != [])
+                    .map(lambda i: [get_file_index(i[1]), i[1]])
+                    .to_list(),
+                    key=lambda i: i[0],
+                )
+            )
+            .map(lambda i: "/".join([self.work_dir, i[-1]]))
+            .to_list()
+        )
