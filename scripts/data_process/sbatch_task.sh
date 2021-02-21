@@ -10,6 +10,7 @@ spack load root@6.22.00%gcc@7.3.0 arch=$SPACK_ARCH
 spack load anaconda3@2019.10%gcc@8.3.1 arch=$SPACK_ARCH
 spack load cuda@10.1.243%gcc@10.2.0 arch=$SPACK_ARCH
 source activate monolithic-crystal
+export CUDA_VISIBLE_DEVICES=-1
 
 echo "[MESSAGE] Doing job in $d, current time: $(date)"
 

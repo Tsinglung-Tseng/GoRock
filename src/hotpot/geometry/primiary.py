@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import numpy as np
-import ipyvolume as ipv
+# import ipyvolume as ipv
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from functools import partial
@@ -259,7 +259,7 @@ class Surface:
             i=[0, 1],
             j=[1, 2],
             k=[2, 3],
-            # opacity=0.2,
+            opacity=0.2,
             # color='rgba(255,0,255, 0.4)',
             color="lightblue",
             **marker,

@@ -31,11 +31,11 @@ class FuncDataFrame:
 
 
 class SipmArray:
-    def __init__(self, bins=16):
+    def __init__(self, crystal_z=15, bins=16):
         self.bins = bins
         self.crystal_x = 50
         self.crystal_y = 50
-        self.crystal_z = 15
+        self.crystal_z = crystal_z
 
         self.sipm_vertex_x = np.linspace(
             self.crystal_x / 2 - self.crystal_x,

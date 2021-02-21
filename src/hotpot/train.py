@@ -3,6 +3,7 @@ from hotpot.database import Database
 from hotpot.functools import FuncDataFrame
 from hotpot.simulation.image_system import ImageSystem
 from hotpot.geometry.system import SipmArray
+from scipy.ndimage.filters import uniform_filter1d
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -99,6 +100,32 @@ class ModelTuner:
         ]
 
 
+def pattern_filter_factory(pattern):
+    def get_file_index(fname):
+        return int(fname.split(".")[0].split("_")[-1])
+
+    pattern_filter = lambda files, work_dir: (
+        FuncList(
+            sorted(
+                FuncList(files)
+                .map(lambda i: [re.findall(pattern, i), i])
+                .filter(lambda i: i[0] != [])
+                .map(lambda i: [get_file_index(i[1]), i[1]])
+                .to_list(),
+                key=lambda i: i[0],
+            )
+        )
+        .map(lambda i: "/".join([work_dir, i[-1]]))
+        .to_list()
+    )
+    return pattern_filter
+
+
+def list_of_array_file_to_array(files):
+    npload = lambda fname: np.load(fname)
+    return np.concatenate([npload(i) for i in files])
+
+
 class Train:
     def __init__(self, train_id):
         self.train_id = train_id
@@ -125,40 +152,104 @@ class Train:
 
     @property
     def loss_files(self):
-        def get_file_index(fname):
-            return int(fname.split(".")[0].split("_")[-1])
+        return pattern_filter_factory('^loss_.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
+        # def get_file_index(fname):
+            # return int(fname.split(".")[0].split("_")[-1])
 
-        return (
-            FuncList(
-                sorted(
-                    FuncList(self.all_files_on_work_dir)
-                    .map(lambda i: [re.findall("^loss_step.*\.npy$", i), i])
-                    .filter(lambda i: i[0] != [])
-                    .map(lambda i: [get_file_index(i[1]), i[1]])
-                    .to_list(),
-                    key=lambda i: i[0],
-                )
-            )
-            .map(lambda i: "/".join([self.work_dir, i[-1]]))
-            .to_list()
-        )
+        # return (
+            # FuncList(
+                # sorted(
+                    # FuncList(self.all_files_on_work_dir)
+                    # .map(lambda i: [re.findall("^loss_step.*\.npy$", i), i])
+                    # .filter(lambda i: i[0] != [])
+                    # .map(lambda i: [get_file_index(i[1]), i[1]])
+                    # .to_list(),
+                    # key=lambda i: i[0],
+                # )
+            # )
+            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
+            # .to_list()
+        # )
+
+    @property
+    def val_loss_files(self):
+        return pattern_filter_factory('^val_loss_.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
+        # def get_file_index(fname):
+            # return int(fname.split(".")[0].split("_")[-1])
+
+        # return (
+            # FuncList(
+                # sorted(
+                    # FuncList(self.all_files_on_work_dir)
+                    # .map(lambda i: [re.findall("^val_loss_step.*\.npy$", i), i])
+                    # .filter(lambda i: i[0] != [])
+                    # .map(lambda i: [get_file_index(i[1]), i[1]])
+                    # .to_list(),
+                    # key=lambda i: i[0],
+                # )
+            # )
+            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
+            # .to_list()
+        # )
 
     @property
     def net_infered(self):
-        def get_file_index(fname):
-            return int(fname.split(".")[0].split("_")[-1])
+        return pattern_filter_factory('^net_infered.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
+        # def get_file_index(fname):
+            # return int(fname.split(".")[0].split("_")[-1])
 
-        return (
-            FuncList(
-                sorted(
-                    FuncList(self.all_files_on_work_dir)
-                    .map(lambda i: [re.findall("^net_infered.*\.npy$", i), i])
-                    .filter(lambda i: i[0] != [])
-                    .map(lambda i: [get_file_index(i[1]), i[1]])
-                    .to_list(),
-                    key=lambda i: i[0],
-                )
+        # return (
+            # FuncList(
+                # sorted(
+                    # FuncList(self.all_files_on_work_dir)
+                    # .map(lambda i: [re.findall("^net_infered.*\.npy$", i), i])
+                    # .filter(lambda i: i[0] != [])
+                    # .map(lambda i: [get_file_index(i[1]), i[1]])
+                    # .to_list(),
+                    # key=lambda i: i[0],
+                # )
+            # )
+            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
+            # .to_list()
+        # )
+
+    @property
+    def loss(self):
+        return list_of_array_file_to_array(self.loss_files)
+
+    @property
+    def val_loss(self):
+        return list_of_array_file_to_array(self.val_loss_files)
+
+    def view_loss(self, ma_window=50, show_from=100):
+        epoch_ratio = int(len(self.loss)/len(self.val_loss))
+
+        val_loss = uniform_filter1d(self.val_loss[show_from:], ma_window)
+        loss = uniform_filter1d(self.loss[::epoch_ratio][show_from:], ma_window)
+        x_seq = np.arange(len(loss))
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=x_seq,
+                y=val_loss,
+                name='Validation Loss',
+                line=dict(color='blue')
             )
-            .map(lambda i: "/".join([self.work_dir, i[-1]]))
-            .to_list()
-        )
+        )    
+
+        fig.add_trace(
+            go.Scatter(
+                x=x_seq,
+                y=loss,
+                name='Train Loss',
+                line=dict(color='red')
+            )
+        )    
+
+        fig.show()
+
+
+    def model_on_step(self):
+        return pattern_filter_factory('^vars_train_on_.*\.h5$')(self.all_files_on_work_dir, self.work_dir)
