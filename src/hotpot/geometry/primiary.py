@@ -3,7 +3,7 @@ import numpy as np
 # import ipyvolume as ipv
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from functools import partial
+from functools import partial, reduce
 from ..database import Database
 
 
@@ -55,6 +55,10 @@ class Cartesian3:
     def from_matrix(m):
         return Cartesian3.from_xyz(x=m[0], y=m[1], z=m[2])
 
+    @staticmethod
+    def from_cartesian3s(list_of_carteisan3):
+        return reduce(lambda car, cdr: car.concat(cdr), list_of_carteisan3)
+
     @classmethod
     def local_pos_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.localPosX, hits.localPosY, hits.localPosZ)
@@ -69,6 +73,13 @@ class Cartesian3:
 
     def __repr__(self):
         return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+
+    def __getitem__(self, idx):
+        return Cartesian3.from_xyz(
+            self.x[idx],
+            self.y[idx],
+            self.z[idx],
+        )
 
     def __add__(self, other):
         return self.op_zip(other, np.add)
@@ -440,3 +451,38 @@ class Box:
 
     def rotate_ypr(self, rv_ypr):
         return Box.from_vertices_of_surface(self.vertices.rotate_ypr(rv_ypr))
+
+
+class Trapezoid:
+    def __init__(self, vertices: Cartesian3):
+        self.vertices = vertices
+
+    @staticmethod
+    def from_size(lower_side_length, higher_side_length, hight):
+        square_surface = lambda side_lenght : Cartesian3.from_tuple3s([
+            [side_lenght / 2, side_lenght / 2, 0],
+            [side_lenght / 2, -side_lenght / 2, 0],
+            [-side_lenght / 2, side_lenght / 2, 0],
+            [-side_lenght / 2, -side_lenght / 2, 0]
+        ])
+
+        side_surface = lambda i, j: lower_surface_vertices.fmap(lambda x: [x[i], x[j]]).concat(
+            higher_surface_vertices.fmap(lambda x: [x[i], x[j]])
+        )
+
+        lower_surface_vertices = square_surface(lower_side_length).move([0,0,-hight/2])
+        higher_surface_vertices = square_surface(higher_side_length).move([0,0,hight/2])
+
+        side_1_vertices = side_surface(0, 1)
+        side_2_vertices = side_surface(0, 2)
+        side_3_vertices = side_surface(2, 3)
+        side_4_vertices = side_surface(1, 3)
+
+        return [
+            lower_surface_vertices,
+            higher_surface_vertices,
+            side_1_vertices,
+            side_2_vertices,
+            side_3_vertices,
+            side_4_vertices
+        ]

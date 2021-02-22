@@ -1,5 +1,5 @@
 from .mac import MAC
-from ..geometry.primiary import Cartesian3, Box
+from ..geometry.primiary import Cartesian3, Box, Trapezoid 
 import itertools
 import plotly.graph_objects as go
 import numpy as np
@@ -117,6 +117,26 @@ class ImageSystem(MAC):
     def to_plotly(self):
         boxies = [
             Box.from_size(*self.crystal_size)
+            .move(para[0])
+            .move(para[1])
+            .rotate_ypr(para[2])
+            .to_plotly()
+            for para in self.image_system_mr_paras
+        ]
+        return [item for sublist in boxies for item in sublist]
+
+
+class AlbiraImageSystem(ImageSystem):
+    def __init__(self, mac):
+        super().__init__(mac.dump(), "Geometry.mac")
+
+    @staticmethod
+    def from_file(path):
+        return AlbiraImageSystem(MAC.from_file(path))
+
+    def to_plotly(self):
+        boxies = [
+            Trapezoid.from_size(self.crystal_size[0], self.crystal_size[2], self.crystal_size[4])
             .move(para[0])
             .move(para[1])
             .rotate_ypr(para[2])
