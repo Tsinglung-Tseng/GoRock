@@ -74,9 +74,24 @@ class FuncArray:
     def __init__(self, array):
         self.array = array
 
+    def __repr__(self):
+        return f'''FuncArray: {str(self.array)}''' 
+
+    def __getitem__(self, key):
+        if isinstance(self.array, np.ndarray):
+            return FuncArray(self.array[key])
+        elif isinstance(self.array, list):
+            return FuncArray([self.array[i] for i in key])
+
     @staticmethod
     def from_pd_series(series):
         return FuncArray(np.array(series.apply(lambda i: np.array(i)).to_list()))
+
+    def map(self, func):
+        if isinstance(self.array, np.ndarray):
+            return FuncArray(func(self.array)) 
+        elif isinstance(self.array, list):
+            return FuncArray([func(i) for i in self.array])
 
     def to_tensor(self):
         return tf.convert_to_tensor(self.to_numpy())
@@ -92,11 +107,18 @@ class FuncArray:
             return np.array(self.array)
 
     def to_list(self):
-        raise NotImplementedError
+        return self.array.tolist()
 
     @property
     def shape(self):
         return self.array.shape
+
+    def transpose(self, axes):
+        return FuncArray(np.transpose(self.array, axes=axes))
+
+    def replace_col_with_constant(self, col_key, constant):
+        assert len(self.shape)==2
+        self.array[:, col_key] = np.full_like(self.array[:, col_key], constant)
 
     def rollaxis(self, axis, start=0):
         return FuncArray(np.rollaxis(self.to_numpy(), axis, start))

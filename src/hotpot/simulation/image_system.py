@@ -98,14 +98,25 @@ class ImageSystem(MAC):
     @property
     def linear_mv(self):
         step = np.array(self.linearRepeatVector)
-        base = step / 2
-        neg_base = base * -1
         result = []
+        
+        origin_correction = step * (self.linearRepeatNumber-1) / 2
 
-        for i in range(1, int(self.linearRepeatNumber / 2 + 1)):
-            result.append((base + (i - 1) * step).tolist())
-            result.append((neg_base - (i - 1) * step).tolist())
-        return result
+        for i in np.arange(self.linearRepeatNumber):
+            result.append(i * step)
+        return (np.array(result)-origin_correction).tolist()
+
+    # @property
+    # def linear_mv(self):
+        # step = np.array(self.linearRepeatVector)
+        # base = step / 2
+        # neg_base = base * -1
+        # result = []
+
+        # for i in range(1, int(self.linearRepeatNumber / 2 + 1)):
+            # result.append((base + (i - 1) * step).tolist())
+            # result.append((neg_base - (i - 1) * step).tolist())
+        # return result
 
     @property
     def image_system_mr_paras(self):
@@ -128,7 +139,7 @@ class ImageSystem(MAC):
 
 class AlbiraImageSystem(ImageSystem):
     def __init__(self, mac):
-        super().__init__(mac.dump(), "Geometry.mac")
+        super().__init__(mac)
 
     @staticmethod
     def from_file(path):
@@ -136,11 +147,17 @@ class AlbiraImageSystem(ImageSystem):
 
     def to_plotly(self):
         boxies = [
-            Trapezoid.from_size(self.crystal_size[0], self.crystal_size[2], self.crystal_size[4])
-            .move(para[0])
-            .move(para[1])
-            .rotate_ypr(para[2])
+            Trapezoid(
+                Trapezoid.from_size(
+                    self.crystal_size[0],
+                    self.crystal_size[2],
+                    self.crystal_size[4]
+                ).vertices
+                .move(para[0])
+                .move(para[1])
+                .rotate_ypr(para[2])
+            )
             .to_plotly()
             for para in self.image_system_mr_paras
         ]
-        return [item for sublist in boxies for item in sublist]
+        return sum(boxies, [])

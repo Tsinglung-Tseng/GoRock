@@ -71,9 +71,10 @@ def prepare_script(task_config):
         f.write(task_config["task_script"](task_config["task_id"]))
 
 def prepare_mac(task_config):
-    source_path = Database().read_sql(f'''select path from experiment_config where experiment_id={task_config['geometry_id']};''').to_numpy()[0][0]+'/sub.0/'
+    geometry_path = Database().read_sql(f'''select path from experiment_config where experiment_id={task_config['geometry_id']};''').to_numpy()[0][0]+'/sub.0/'
+    source_path = Database().read_sql(f'''select path from experiment_config where experiment_id={task_config['source_id']};''').to_numpy()[0][0]+'/sub.0/'
     with open("/tmp/Geometry.mac", 'w') as f:
-        f.write(MAC.from_file(source_path+'Geometry.mac').raw_mac)
+        f.write(MAC.from_file(geometry_path+'Geometry.mac').raw_mac)
         
     with open("/tmp/Source.mac", 'w') as f:
         f.write(MAC.from_file(source_path+'Source.mac').raw_mac)

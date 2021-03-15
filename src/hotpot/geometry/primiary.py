@@ -1,9 +1,12 @@
 import plotly.graph_objects as go
 import numpy as np
+import operator
+import functools
 # import ipyvolume as ipv
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from functools import partial, reduce
+from collections.abc import Iterable
 from ..database import Database
 
 
@@ -31,7 +34,7 @@ class Cartesian3:
         """
         Map function horizontally on each element of param arrays.
         """
-        pass
+        return reduce(func, [self.x, self.y, self.z])
 
     def op_zip(self, other, op):
         return self.__class__.from_xyz(
@@ -72,7 +75,10 @@ class Cartesian3:
         return Cartesian3.from_xyz(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
 
     def __repr__(self):
-        return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+        try:
+            return f"""{self.__class__.__name__} <size: ({len(self.x)}, {len(self.y)}, {len(self.z)}), x: {self.x}, y: {self.y}, z: {self.z}>"""
+        except:
+            return f"""{self.__class__.__name__} <size: (1, 1, 1), x: {self.x}, y: {self.y}, z: {self.z}>"""
 
     def __getitem__(self, idx):
         return Cartesian3.from_xyz(
@@ -93,6 +99,21 @@ class Cartesian3:
 
     def __truediv__(self, other):
         return Cartesian3(self.x / other, self.y / other, self.z / other)
+
+    def __len__(self):
+        return len(self.x)
+
+    def __getitem__(self, key):
+        def _getter(item):
+            if isinstance(item[key], Iterable):
+                return item[key]
+            else:
+                return np.array([item[key]])
+        return self.fmap(_getter)
+
+    @property
+    def shape(self):
+        return np.array([len(self), 3])
 
     def divide(self, other):
         return self.op_zip(other, np.divide)
@@ -150,12 +171,29 @@ class Cartesian3:
         result = np.matmul(m, self.to_matrix())
         return Cartesian3.from_matrix(result)
 
+    def close_enough_to(self, other):
+        return (
+            (self - other)
+            .fmap(lambda i: abs(i)<0.001)
+            .fmap(lambda i: functools.reduce(lambda car, cdr: operator.and_(car, cdr), i))
+            .hmap(lambda car, cdr: operator.and_(car, cdr))
+        )
+
     def distance_to(self, other):
         diff = self - other
         return tf.sqrt(tf.reduce_sum(tf.square(diff.to_tensor()), axis=0))
 
     def to_matrix(self):
         return tf.stack([self.x, self.y, self.z], axis=0)
+
+    def to_numpy(self):
+        return self.to_tensor().numpy()
+    
+    def to_list(self):
+        return self.to_tensor().numpy().tolist()
+
+    def to_func_array(self):
+        return FuncArray(self.to_numpy())
 
     def to_tensor(self):
         return tf.stack([tf.constant(self.x), tf.constant(self.y), tf.constant(self.z)])
@@ -174,8 +212,12 @@ class Cartesian3:
     def to_plotly(self, mode="markers", **kwargs):
         return go.Scatter3d(x=self.x, y=self.y, z=self.z, mode=mode, **kwargs)
 
-    def to_plotly_as_mesh3d(self, **marker):
-        return go.Mesh3d(x=self.x, y=self.y, z=self.z, marker=marker)
+    # def to_plotly_as_surface(self):
+        # np
+        # return go.Surface(z=self.)
+
+    def to_plotly_as_mesh3d(self, **kwargs):
+        return go.Mesh3d(x=self.x, y=self.y, z=self.z, **kwargs)
 
     def view(self, figsize=(30, 10)):
         plt.figure(figsize=figsize)
@@ -199,11 +241,21 @@ class Segment:
         self.fst = fst
         self.snd = snd
 
+    @staticmethod
+    def from_listmode(lm):
+        return Segment(
+            fst=Cartesian3.from_tuple3s(lm[:,:3]),
+            snd=Cartesian3.from_tuple3s(lm[:,3:])
+        )
+
     def __repr__(self):
         return f"""Pair: <fst: {self.fst}; snd: {self.snd}>"""
 
-    def hmap(self):
-        pass
+    def __getitem__(self, key):
+        return self.fmap(lambda i: i[key])
+
+    def fmap(self, func):
+        return self.__class__(fst=func(self.fst), snd=func(self.snd))
 
     def seg_length(self):
         return self.fst.distance_to(self.snd)
@@ -218,26 +270,17 @@ class Segment:
     def to_listmode(self):
         return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
 
-    def to_plotly_line(self, line_length=600, mode="lines", **kwargs):
-        tmp = []
-
-        lm = Pair(
+    def to_plotly_line(self, line_length=600, mode="lines", marker=dict(size=3), **kvargs):
+        lines = Segment(
             self.middle_point + self.direct_vector() * line_length / 2,
             self.middle_point - self.direct_vector() * line_length / 2,
-        ).to_listmode()
+        )
+        return lines.to_plotly_segment(mode=mode, marker=marker, **kvargs)
 
-        for i in range(lm.shape[2]):
-            x, y, z = lm[:, :, i].T
-            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
-        return tmp
-
-    def to_plotly_segment(self, mode="markers+lines", **kwargs):
+    def to_plotly_segment(self, mode="markers+lines", marker=dict(size=3), **kwargs):
         tmp = []
-
-        lm = gamma_pair.to_listmode()
-        for i in range(lm.shape[2]):
-            x, y, z = lm[:, :, i].T
-            tmp.append(go.Scatter3d(x=x, y=y, z=z, mode=mode, **kwargs))
+        for i in self:
+            tmp.append(i.fst.concat(i.snd).to_plotly(mode, marker=marker, **kwargs))
         return tmp
 
 
@@ -478,11 +521,23 @@ class Trapezoid:
         side_3_vertices = side_surface(2, 3)
         side_4_vertices = side_surface(1, 3)
 
-        return [
+        return Trapezoid(Cartesian3.from_cartesian3s([
             lower_surface_vertices,
             higher_surface_vertices,
             side_1_vertices,
             side_2_vertices,
             side_3_vertices,
             side_4_vertices
+        ]))
+
+    def to_surface_vertices(self):
+        split_index = lambda length, split_by: [
+            np.arange(*r) 
+            for r in 
+            list(zip(np.arange(0,length,split_by), np.arange(0,length,split_by)+split_by))
         ]
+
+        return [self.vertices[r] for r in split_index(24,4)]
+
+    def to_plotly(self):
+        return [Surface(s).to_plotly() for s in self.to_surface_vertices()]
