@@ -1,6 +1,7 @@
 from hotpot.simulation.image_system import ImageSystem
 from hotpot.geometry.primiary import Cartesian3, Surface, Box
-from hotpot.sample import FuncArray
+# from hotpot.sample import FuncArray
+from ..functools import FuncArray
 from hotpot.geometry.system import SipmArray
 import plotly.graph_objects as go
 import tensorflow as tf

@@ -23,8 +23,8 @@ os.environ[
 os.environ["PICLUSTER_DB"] = "postgresql://picluster@192.168.1.96:5432/picluster"
 
 parser = argparse.ArgumentParser(description="Yo! Train something! Let's rock!")
-parser.add_argument('train_cached_dataset_id', type=int, help='Train cached dataset id') 
-parser.add_argument('valid_cached_dataset_id', type=int, help='Valid cached dataset id') 
+parser.add_argument("train_cached_dataset_id", type=int, help="Train cached dataset id")
+parser.add_argument("valid_cached_dataset_id", type=int, help="Valid cached dataset id")
 args = parser.parse_args()
 train_cached_dataset_id = args.train_cached_dataset_id
 valid_cached_dataset_id = args.valid_cached_dataset_id
@@ -39,33 +39,39 @@ anger = tf.keras.Input(shape=(6), name="anger_infered")
 
 res_component = (
     FuncNNLayer(stacked_counts)
-    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same'))
-    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same'))
-#     .append_next_layer(tf.keras.layers.Conv2D(32, 1, activation='relu', padding='same'))
-    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same'))
-    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same'))
-    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same'))
+    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation="relu", padding="same"))
+    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation="relu", padding="same"))
+    #     .append_next_layer(tf.keras.layers.Conv2D(32, 1, activation='relu', padding='same'))
+    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation="relu", padding="same"))
+    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation="relu", padding="same"))
+    .append_next_layer(tf.keras.layers.Conv2D(32, 3, activation="relu", padding="same"))
     .append_next_layer(tf.keras.layers.Flatten())
     .append_next_layer(tf.keras.layers.Dense(2048))
     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(1024))
     .append_next_layer(tf.keras.layers.Dense(1024))
-#     .append_next_layer(tf.keras.layers.Dropout(0.5))
+    #     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(512))
     .append_next_layer(tf.keras.layers.Dense(512))
-#     .append_next_layer(tf.keras.layers.Dropout(0.5))
+    #     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(256))
     .append_next_layer(tf.keras.layers.Dense(256))
-#     .append_next_layer(tf.keras.layers.Dropout(0.5))
+    #     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(128))
     .append_next_layer(tf.keras.layers.Dense(128))
-#     .append_next_layer(tf.keras.layers.Dropout(0.5))
+    #     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(64))
     .append_next_layer(tf.keras.layers.Dense(64))
-#     .append_next_layer(tf.keras.layers.Dropout(0.5))
+    #     .append_next_layer(tf.keras.layers.Dropout(0.5))
     .append_next_layer(tf.keras.layers.Dense(32))
     .append_next_layer(tf.keras.layers.Dense(32))
-    .append_next_layer(tf.keras.layers.Dense(16, kernel_regularizer=tf.keras.regularizers.l2(0.0001), activity_regularizer=tf.keras.regularizers.l1(0.0001)))
+    .append_next_layer(
+        tf.keras.layers.Dense(
+            16,
+            kernel_regularizer=tf.keras.regularizers.l2(0.0001),
+            activity_regularizer=tf.keras.regularizers.l1(0.0001),
+        )
+    )
     .append_next_layer(tf.keras.layers.Dense(16))
     .append_next_layer(tf.keras.layers.Dense(6))
 )
@@ -103,5 +109,3 @@ for i in range(500):
         np.save(f, np.array(history.losses))
     with open(f"val_loss_train_on_{train_cached_dataset_id}_step_{i}.npy", "wb") as f:
         np.save(f, np.array(history.val_losses))
-
-

@@ -75,7 +75,9 @@ class FuncArray:
         self.array = array
 
     def __repr__(self):
-        return f'''FuncArray: {str(self.array)}''' 
+        return (
+            f"""FuncArray: < shape: {str(self.shape)}>, < value: {str(self.array)}>"""
+        )
 
     def __getitem__(self, key):
         if isinstance(self.array, np.ndarray):
@@ -88,10 +90,10 @@ class FuncArray:
         return FuncArray(np.array(series.apply(lambda i: np.array(i)).to_list()))
 
     def map(self, func):
-        if isinstance(self.array, np.ndarray):
-            return FuncArray(func(self.array)) 
-        elif isinstance(self.array, list):
-            return FuncArray([func(i) for i in self.array])
+        # if isinstance(self.array, np.ndarray):
+            # return FuncArray(func(self.array))
+        # elif isinstance(self.array, list):
+        return FuncArray([func(i) for i in self.array])
 
     def to_tensor(self):
         return tf.convert_to_tensor(self.to_numpy())
@@ -109,15 +111,22 @@ class FuncArray:
     def to_list(self):
         return self.array.tolist()
 
+    def zip(self, other):
+        assert self.shape == other.shape
+        return FuncArray(list(zip(self.array, other.array))) 
+
     @property
     def shape(self):
-        return self.array.shape
+        if isinstance(self.array, list):
+            return len(self.array)
+        elif isinstance(self.array, np.ndarray):
+            return self.array.shape
 
     def transpose(self, axes):
         return FuncArray(np.transpose(self.array, axes=axes))
 
     def replace_col_with_constant(self, col_key, constant):
-        assert len(self.shape)==2
+        assert len(self.shape) == 2
         self.array[:, col_key] = np.full_like(self.array[:, col_key], constant)
 
     def rollaxis(self, axis, start=0):

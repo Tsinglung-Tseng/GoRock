@@ -151,67 +151,28 @@ class Train:
         return list(os.walk(self.work_dir))[0][2]
 
     @property
-    def loss_files(self):
-        return pattern_filter_factory('^loss_.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
-        # def get_file_index(fname):
-            # return int(fname.split(".")[0].split("_")[-1])
+    def vars_train(self):
+        return pattern_filter_factory("^vars_train_on_.*\.h5$")(
+            self.all_files_on_work_dir, self.work_dir
+        )
 
-        # return (
-            # FuncList(
-                # sorted(
-                    # FuncList(self.all_files_on_work_dir)
-                    # .map(lambda i: [re.findall("^loss_step.*\.npy$", i), i])
-                    # .filter(lambda i: i[0] != [])
-                    # .map(lambda i: [get_file_index(i[1]), i[1]])
-                    # .to_list(),
-                    # key=lambda i: i[0],
-                # )
-            # )
-            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
-            # .to_list()
-        # )
+    @property
+    def loss_files(self):
+        return pattern_filter_factory("^loss_.*\.npy$")(
+            self.all_files_on_work_dir, self.work_dir
+        )
 
     @property
     def val_loss_files(self):
-        return pattern_filter_factory('^val_loss_.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
-        # def get_file_index(fname):
-            # return int(fname.split(".")[0].split("_")[-1])
-
-        # return (
-            # FuncList(
-                # sorted(
-                    # FuncList(self.all_files_on_work_dir)
-                    # .map(lambda i: [re.findall("^val_loss_step.*\.npy$", i), i])
-                    # .filter(lambda i: i[0] != [])
-                    # .map(lambda i: [get_file_index(i[1]), i[1]])
-                    # .to_list(),
-                    # key=lambda i: i[0],
-                # )
-            # )
-            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
-            # .to_list()
-        # )
+        return pattern_filter_factory("^val_loss_.*\.npy$")(
+            self.all_files_on_work_dir, self.work_dir
+        )
 
     @property
     def net_infered(self):
-        return pattern_filter_factory('^net_infered.*\.npy$')(self.all_files_on_work_dir, self.work_dir)
-        # def get_file_index(fname):
-            # return int(fname.split(".")[0].split("_")[-1])
-
-        # return (
-            # FuncList(
-                # sorted(
-                    # FuncList(self.all_files_on_work_dir)
-                    # .map(lambda i: [re.findall("^net_infered.*\.npy$", i), i])
-                    # .filter(lambda i: i[0] != [])
-                    # .map(lambda i: [get_file_index(i[1]), i[1]])
-                    # .to_list(),
-                    # key=lambda i: i[0],
-                # )
-            # )
-            # .map(lambda i: "/".join([self.work_dir, i[-1]]))
-            # .to_list()
-        # )
+        return pattern_filter_factory("^net_infered.*\.npy$")(
+            self.all_files_on_work_dir, self.work_dir
+        )
 
     @property
     def loss(self):
@@ -222,7 +183,7 @@ class Train:
         return list_of_array_file_to_array(self.val_loss_files)
 
     def view_loss(self, ma_window=50, show_from=100):
-        epoch_ratio = int(len(self.loss)/len(self.val_loss))
+        epoch_ratio = int(len(self.loss) / len(self.val_loss))
 
         val_loss = uniform_filter1d(self.val_loss[show_from:], ma_window)
         loss = uniform_filter1d(self.loss[::epoch_ratio][show_from:], ma_window)
@@ -232,24 +193,17 @@ class Train:
 
         fig.add_trace(
             go.Scatter(
-                x=x_seq,
-                y=val_loss,
-                name='Validation Loss',
-                line=dict(color='blue')
+                x=x_seq, y=val_loss, name="Validation Loss", line=dict(color="blue")
             )
-        )    
+        )
 
         fig.add_trace(
-            go.Scatter(
-                x=x_seq,
-                y=loss,
-                name='Train Loss',
-                line=dict(color='red')
-            )
-        )    
+            go.Scatter(x=x_seq, y=loss, name="Train Loss", line=dict(color="red"))
+        )
 
         fig.show()
 
-
     def model_on_step(self):
-        return pattern_filter_factory('^vars_train_on_.*\.h5$')(self.all_files_on_work_dir, self.work_dir)
+        return pattern_filter_factory("^vars_train_on_.*\.h5$")(
+            self.all_files_on_work_dir, self.work_dir
+        )

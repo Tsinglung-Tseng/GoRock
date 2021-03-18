@@ -130,11 +130,11 @@ class CachedData:
 class DBDataset:
     def __init__(self, table_name):
         self.table_name = table_name
-        self._data = None    
-        
+        self._data = None
+
     def build(self):
-        self._data = Database().read_sql(f'select * from {self.table_name};').to_numpy()
-            
+        self._data = Database().read_sql(f"select * from {self.table_name};").to_numpy()
+
     @property
     def data(self):
         if self._data is not None:

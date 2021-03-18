@@ -1,5 +1,5 @@
 from .mac import MAC
-from ..geometry.primiary import Cartesian3, Box, Trapezoid 
+from ..geometry.primiary import Cartesian3, Box, Trapezoid
 import itertools
 import plotly.graph_objects as go
 import numpy as np
@@ -99,24 +99,24 @@ class ImageSystem(MAC):
     def linear_mv(self):
         step = np.array(self.linearRepeatVector)
         result = []
-        
-        origin_correction = step * (self.linearRepeatNumber-1) / 2
+
+        origin_correction = step * (self.linearRepeatNumber - 1) / 2
 
         for i in np.arange(self.linearRepeatNumber):
             result.append(i * step)
-        return (np.array(result)-origin_correction).tolist()
+        return (np.array(result) - origin_correction).tolist()
 
     # @property
     # def linear_mv(self):
-        # step = np.array(self.linearRepeatVector)
-        # base = step / 2
-        # neg_base = base * -1
-        # result = []
+    # step = np.array(self.linearRepeatVector)
+    # base = step / 2
+    # neg_base = base * -1
+    # result = []
 
-        # for i in range(1, int(self.linearRepeatNumber / 2 + 1)):
-            # result.append((base + (i - 1) * step).tolist())
-            # result.append((neg_base - (i - 1) * step).tolist())
-        # return result
+    # for i in range(1, int(self.linearRepeatNumber / 2 + 1)):
+    # result.append((base + (i - 1) * step).tolist())
+    # result.append((neg_base - (i - 1) * step).tolist())
+    # return result
 
     @property
     def image_system_mr_paras(self):
@@ -136,6 +136,10 @@ class ImageSystem(MAC):
         ]
         return [item for sublist in boxies for item in sublist]
 
+    @property
+    def crystal_size_cart3(self):
+        return Cartesian3.from_tuple3s([self.crystal_size])
+
 
 class AlbiraImageSystem(ImageSystem):
     def __init__(self, mac):
@@ -149,15 +153,12 @@ class AlbiraImageSystem(ImageSystem):
         boxies = [
             Trapezoid(
                 Trapezoid.from_size(
-                    self.crystal_size[0],
-                    self.crystal_size[2],
-                    self.crystal_size[4]
-                ).vertices
-                .move(para[0])
+                    self.crystal_size[0], self.crystal_size[2], self.crystal_size[4]
+                )
+                .vertices.move(para[0])
                 .move(para[1])
                 .rotate_ypr(para[2])
-            )
-            .to_plotly()
+            ).to_plotly()
             for para in self.image_system_mr_paras
         ]
         return sum(boxies, [])

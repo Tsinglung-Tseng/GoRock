@@ -32,6 +32,7 @@ class FuncDataFrame:
 
 class SipmArray:
     """SipmArray(12).local_pos.to_plotly(marker=dict(size=1))"""
+
     def __init__(self, crystal_z=15, bins=16):
         self.bins = bins
         self.crystal_x = 50
@@ -255,12 +256,15 @@ class Hit:
             )
             conn.commit()
 
-
-    def sample_cart3(self, num_of_sample, keys=['posX', 'posY', 'posZ']):
+    def sample_cart3(self, num_of_sample, keys=["posX", "posY", "posZ"]):
         """sample hits result as Cartesian3
         Hit(hits).sample_cart3(10000, ['posX', 'posY', 'posZ']).view()
         """
-        return Cartesian3.from_tuple3s(self.df.iloc[np.random.randint(self.df.shape[0], size=num_of_sample)][keys].to_numpy())
+        return Cartesian3.from_tuple3s(
+            self.df.iloc[np.random.randint(self.df.shape[0], size=num_of_sample)][
+                keys
+            ].to_numpy()
+        )
 
 
 class Sample(FuncDataFrame):
