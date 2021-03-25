@@ -1,9 +1,9 @@
+import os
 import plotly.graph_objects as go
 import numpy as np
 import sympy as sp
 import operator
 import functools
-
 # import ipyvolume as ipv
 from ..functools import FuncArray
 import tensorflow as tf
@@ -11,6 +11,49 @@ import matplotlib.pyplot as plt
 from functools import partial, reduce
 from collections.abc import Iterable
 from ..database import Database
+
+
+p2g = Database().read_sql(os.getenv("P2G_SQL"))
+crystal_z = int(os.getenv("CRYSTAL_Z"))
+
+
+LeviCivitaSymbol = np.array([
+    [
+        [0,0,0],
+        [0,0,1],
+        [0,-1,0]
+    ],
+    [
+        [0,0,-1],
+        [0,0,0],
+        [1,0,0]
+    ],
+    [
+        [0,1,0],
+        [-1,0,0],
+        [0,0,0]
+    ]
+])
+
+
+def move_z():
+    if crystal_z == 15:
+        return 217.5
+    elif crystal_z == 20:
+        return 220
+    elif crystal_z == 25:
+        return 222.5
+
+def move_arg_by_crystalID(crystalID):
+    move_arg = FuncArray(p2g[["move_x", "move_y", "move_z"]].to_numpy())
+    move_arg.replace_col_with_constant(2, move_z())
+
+    rotate_arg = FuncArray(
+        p2g[["rotate_angle_x", "rotate_angle_y", "rotate_angle_z"]].to_numpy()
+    )
+
+    return [move_arg.to_list()[crystalID], rotate_arg.to_list()[crystalID]]
+reverse_move_arg_by_crystalID = lambda crystalID: (np.array(move_arg_by_crystalID(crystalID))*-1).tolist()
 
 
 def split_raw_df_into_even_odd_pairs(raw_df):
@@ -50,7 +93,8 @@ class Cartesian3:
 
     @staticmethod
     def from_tuple(t):
-        return Cartesian3(*t)
+        x, y, z = t
+        return Cartesian3([x], [y], [z])
 
     @staticmethod
     def from_tuple3s(TPs):
@@ -65,6 +109,13 @@ class Cartesian3:
     def from_cartesian3s(list_of_carteisan3):
         return reduce(lambda car, cdr: car.concat(cdr), list_of_carteisan3)
 
+    @staticmethod
+    def from_list_of_cart3(l_cart):
+        result = l_cart[0]
+        for i in l_cart[1:]:
+            result = result.concat(i)
+        return result
+
     @classmethod
     def local_pos_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.localPosX, hits.localPosY, hits.localPosZ)
@@ -76,6 +127,7 @@ class Cartesian3:
     @classmethod
     def source_from_hits(cls, hits):
         return Cartesian3.from_xyz(hits.sourcePosX, hits.sourcePosY, hits.sourcePosZ)
+
 
     def __repr__(self):
         try:
@@ -119,6 +171,50 @@ class Cartesian3:
     def shape(self):
         return np.array([len(self), 3])
 
+    def cross(self, other):
+        LeviCivitaSymbol = np.array([
+            [
+                [0,0,0],
+                [0,0,1],
+                [0,-1,0]
+            ],
+            [
+                [0,0,-1],
+                [0,0,0],
+                [1,0,0]
+            ],
+            [
+                [0,1,0],
+                [-1,0,0],
+                [0,0,0]
+            ]
+        ])
+        make_n_length_LeviCivitaSymbol = lambda n: np.array([LeviCivitaSymbol for _ in range(n)])
+        length = self.shape[0]
+        return np.einsum(
+            'cijk,cj,ck->ci', 
+            make_n_length_LeviCivitaSymbol(length), 
+            self.to_matrix(), 
+            other.to_matrix()
+        )
+
+    def dot(self, other):
+        assert (self.shape == other.shape).all()
+        assert len(self.shape) == 2
+        return np.sum(self.to_numpy().T*other.to_numpy().T, axis=1)
+
+    def length_as_vector(self):
+        # if len(self) == 1:
+            # return
+        # else:
+        return np.sqrt(self.dot(self))
+
+    def angle_rad(self, other):
+        return np.arccos(self.dot(other) / (self.length_as_vector() * other.length_as_vector()))
+
+    def angle_ang(self, other):
+        return self.angle_rad(other)*180/np.pi
+
     def divide(self, other):
         return self.op_zip(other, np.divide)
 
@@ -136,6 +232,12 @@ class Cartesian3:
             y=_np_concat()([self.y, other.y]),
             z=_np_concat()([self.z, other.z]),
         )
+
+    def func_zip(self, operand, func):
+        result = []
+        for idx, item in enumerate(self):
+            result.append(func(item, operand[idx]))
+        return Cartesian3.from_list_of_cart3(result)
 
     def rotate_ypr(self, rv_ypr):
         def rotation_matrix_x(angle):
@@ -225,6 +327,14 @@ class Cartesian3:
             ),
         )
 
+    def to_crystal_position_by_id(self, crystalID):
+        move_arg, rotate_ypr_arg = move_arg_by_crystalID(crystalID)
+        return self.move(move_arg).rotate_ypr(rotate_ypr_arg)
+
+    def to_local_position_by_id(self, crystalID):
+        move_arg, rotate_ypr_arg = reverse_move_arg_by_crystalID(crystalID)
+        return self.rotate_ypr(rotate_ypr_arg).move(move_arg)
+
     def to_plotly(self, mode="markers", **kwargs):
         return go.Scatter3d(x=self.x, y=self.y, z=self.z, mode=mode, **kwargs)
 
@@ -250,6 +360,25 @@ class Cartesian3:
         z_view.set_title("z_view")
 
         plt.show()
+
+
+class Plane:
+    def __init__(self, reference_points):
+        self.reference_points = reference_points
+    
+    @property
+    def reference_line(self) -> Cartesian3:
+        return (
+            self.reference_points[0] - 
+            self.reference_points[1]
+        ).concat(
+            self.reference_points[1] - 
+            self.reference_points[2]
+        )
+    
+    @property
+    def norm_vector(self) -> Cartesian3:
+        return Cartesian3.from_tuple(np.einsum('ijk,j,k->i', LeviCivitaSymbol, *self.reference_line.to_numpy().T))
 
 
 class Segment:
@@ -293,6 +422,12 @@ class Segment:
     def middle_point(self):
         return (self.fst + self.snd) / 2
 
+    def distance_to_2p_notation(self, other):
+        return np.hstack([
+            self.fst.distance_to(other.fst),
+            self.snd.distance_to(other.snd),
+        ])
+
     def to_listmode(self):
         return np.hstack([self.fst.to_numpy().T, self.snd.to_numpy().T])
         # return np.stack([self.fst.to_matrix(), self.snd.to_matrix()], axis=0)
@@ -317,6 +452,28 @@ class Segment:
         for i in self:
             tmp.append(i.fst.concat(i.snd).to_plotly(mode, marker=marker, **kwargs))
         return tmp
+
+
+class Plane:
+    def __init__(self, reference_points):
+        self.reference_points = reference_points
+
+    def __repr__(self):
+        return f"""{self.__class__.__name__} <reference_points: {self.reference_points}>"""
+
+    @property
+    def reference_line(self) -> Cartesian3:
+        return (
+            self.reference_points[0] -
+            self.reference_points[1]
+        ).concat(
+            self.reference_points[1] -
+            self.reference_points[2]
+        )
+
+    @property
+    def norm_vector(self) -> Cartesian3:
+        return Cartesian3.from_tuple(np.einsum('ijk,j,k->i', LeviCivitaSymbol, *self.reference_line.to_numpy().T))
 
 
 class Surface:

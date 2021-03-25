@@ -71,6 +71,16 @@ class FuncList:
 
 
 class FuncArray:
+    @staticmethod
+    def maybe_numpy(obj):
+        if isinstance(obj, np.ndarray):
+            return obj
+        else:
+            try:
+                return np.array([obj])
+            except:
+                return None
+            
     def __init__(self, array):
         self.array = array
 
@@ -83,17 +93,37 @@ class FuncArray:
         if isinstance(self.array, np.ndarray):
             return FuncArray(self.array[key])
         elif isinstance(self.array, list):
-            return FuncArray([self.array[i] for i in key])
+            if isinstance(key, int):
+                return self.array[key]
+            elif isinstance(key, list):
+                return FuncArray([self.array[i] for i in key])
+
+    def __iter__(self):
+        self.iter_idx = 0 
+        return self
+
+    def __next__(self):
+        if self.iter_idx < self.len:
+            result = self[self.iter_idx]
+            self.iter_idx += 1
+            return result
+        else:
+            raise StopIteration
 
     @staticmethod
     def from_pd_series(series):
         return FuncArray(np.array(series.apply(lambda i: np.array(i)).to_list()))
 
+    def flatten(self):
+        return FuncArray(self.array.flatten()) 
+
     def map(self, func):
-        # if isinstance(self.array, np.ndarray):
-            # return FuncArray(func(self.array))
-        # elif isinstance(self.array, list):
         return FuncArray([func(i) for i in self.array])
+
+    def fish_map(self, func):
+        shape = self.shape
+        flatten_array = self.flatten()
+        return FuncArray(flatten_array.map(func).array.reshape(shape))
 
     def to_tensor(self):
         return tf.convert_to_tensor(self.to_numpy())
@@ -121,6 +151,13 @@ class FuncArray:
             return len(self.array)
         elif isinstance(self.array, np.ndarray):
             return self.array.shape
+
+    @property
+    def len(self):
+        if isinstance(self.array, list):
+            return len(self.array)
+        elif isinstance(self.array, np.ndarray):
+            return self.array.shape[0]
 
     def transpose(self, axes):
         return FuncArray(np.transpose(self.array, axes=axes))

@@ -8,11 +8,9 @@ os.environ[
 
 os.environ[
     "IMAGE_SYSTEM"
-] = "/home/zengqinglong/optical_simu/system_50x50x15x80_complicated_phantom/test_simu/Geometry.mac"
-os.environ["CRYSTAL_Z"] = "15"
+] = "/home/zengqinglong/optical_simu/system_50x50x20x80_big_sphere_plus/task_4000_subs/sub.123/Geometry.mac"
+os.environ["CRYSTAL_Z"] = "20"
 os.environ["CACHED_DATA_DIR"] = "/home/zengqinglong/optical_simu/cached_data"
-# os.environ["NETWROK_PATH"] = "/home/zengqinglong/.train/2021-02-19_18:46:47"
-
 os.environ["P2G_SQL"] = "select * from pos_local_to_global_view;"
 os.environ["COUNTS_SCALE_VALUE"] = '10'
 

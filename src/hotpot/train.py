@@ -189,19 +189,23 @@ class Train:
         loss = uniform_filter1d(self.loss[::epoch_ratio][show_from:], ma_window)
         x_seq = np.arange(len(loss))
 
-        fig = go.Figure()
+        # fig = go.Figure()
 
-        fig.add_trace(
-            go.Scatter(
-                x=x_seq, y=val_loss, name="Validation Loss", line=dict(color="blue")
-            )
-        )
+        # fig.add_trace(
+            # go.Scatter(
+                # x=x_seq, y=val_loss, name="Validation Loss", line=dict(color="blue")
+            # )
+        # )
 
-        fig.add_trace(
-            go.Scatter(x=x_seq, y=loss, name="Train Loss", line=dict(color="red"))
-        )
+        # fig.add_trace(
+            # go.Scatter(x=x_seq, y=loss, name="Train Loss", line=dict(color="red"))
+        # )
 
-        fig.show()
+        # fig.show()
+        return [
+            go.Scatter(x=x_seq, y=val_loss, name=f"Train {self.train_id} Validation Loss", line=dict(color="blue")),
+            go.Scatter(x=x_seq, y=loss, name=f"Train {self.train_id} Train Loss", line=dict(color="red"))
+        ]
 
     def model_on_step(self):
         return pattern_filter_factory("^vars_train_on_.*\.h5$")(
