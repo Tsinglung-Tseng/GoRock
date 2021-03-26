@@ -12,7 +12,7 @@ os.environ[
 os.environ["CRYSTAL_Z"] = "20"
 os.environ["CACHED_DATA_DIR"] = "/home/zengqinglong/optical_simu/cached_data"
 os.environ["P2G_SQL"] = "select * from pos_local_to_global_view;"
-os.environ["COUNTS_SCALE_VALUE"] = '10'
+os.environ["COUNTS_SCALE_VALUE"] = '1'
 
 import pandas as pd
 import numpy as np

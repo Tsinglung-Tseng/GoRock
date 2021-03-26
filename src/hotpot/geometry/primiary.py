@@ -335,6 +335,18 @@ class Cartesian3:
         move_arg, rotate_ypr_arg = reverse_move_arg_by_crystalID(crystalID)
         return self.rotate_ypr(rotate_ypr_arg).move(move_arg)
 
+    def batch_to_local(self, crystalIDs: FuncArray):
+        tmp = []
+        for gamma, crystalID in zip(self, crystalIDs):
+            tmp.append(gamma.to_local_position_by_id(crystalID.array))
+        return Cartesian3.from_list_of_cart3(tmp)
+
+    def batch_to_global(self, crystalIDs: FuncArray):
+        tmp = []
+        for gamma, crystalID in zip(self, crystalIDs):
+            tmp.append(gamma.to_crystal_position_by_id(crystalID.array))
+        return Cartesian3.from_list_of_cart3(tmp)
+
     def to_plotly(self, mode="markers", **kwargs):
         return go.Scatter3d(x=self.x, y=self.y, z=self.z, mode=mode, **kwargs)
 

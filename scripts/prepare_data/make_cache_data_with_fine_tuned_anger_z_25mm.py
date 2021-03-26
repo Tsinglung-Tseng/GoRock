@@ -8,10 +8,9 @@ os.environ[
 
 os.environ[
     "IMAGE_SYSTEM"
-] = "/home/zengqinglong/optical_simu/system_50x50x15x80_complicated_phantom/test_simu/Geometry.mac"
-os.environ["CRYSTAL_Z"] = "15"
+] = "/home/zengqinglong/optical_simu/system_50x50x25x80_big_sphere_plus/task_4000_subs/sub.123/Geometry.mac"
+os.environ["CRYSTAL_Z"] = "25"
 os.environ["CACHED_DATA_DIR"] = "/home/zengqinglong/optical_simu/cached_data"
-# os.environ["NETWROK_PATH"] = "/home/zengqinglong/.train/2021-02-19_18:46:47"
 
 os.environ["P2G_SQL"] = "select * from pos_local_to_global_view;"
 os.environ["COUNTS_SCALE_VALUE"] = '1'
@@ -107,15 +106,83 @@ messager('message', f'Making cache data for experiment: {args.experiment_id}')
 raw_sample = Database().read_sql(get_stmt(args.experiment_id))
 c = Counts(raw_sample)
 
+
+
+####################################################################################################
+
+def local_z_infer_factory(counts, local_z, statical_func=np.std, polyfit_deg=15):
+    counts_statical_feature = counts.map(statical_func)
+    sorted_loaclz_vs_statical_feature = np.sort(
+        np.stack([
+            local_z, 
+            counts_statical_feature.array], axis=1), axis=0)
+    
+    sorted_localz = sorted_loaclz_vs_statical_feature[:,0]
+    sorted_statical_feature = sorted_loaclz_vs_statical_feature[:,1]
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.plot(
+        sorted_statical_feature,
+        sorted_localz
+    )
+
+    fit_line_x = np.linspace(
+        sorted_statical_feature.min(), 
+        sorted_statical_feature.max(), 
+        len(sorted_loaclz_vs_statical_feature)
+    )
+    ploy_para = np.polyfit(
+        sorted_statical_feature, sorted_localz, deg=polyfit_deg)
+    statical_feature_to_local_z = np.poly1d(ploy_para)
+
+    ax.plot(
+        fit_line_x,
+        statical_feature_to_local_z(fit_line_x)
+    )
+    return statical_feature_to_local_z, counts_statical_feature
+
+
+statical_feature_to_local_z, counts_statical_feature = local_z_infer_factory(
+    counts = c.sipm_counts_n_position[:,:,:,0],
+    local_z = c.gamma_1_local.z,
+)
+
+
+statistical_feature_func = np.std
+
+gamma_1_local_anger = c.anger_infered_lor.fst.batch_to_local(c.crystalIDs[:,0])
+gamma_2_local_anger = c.anger_infered_lor.snd.batch_to_local(c.crystalIDs[:,1])
+
+gamma_1_statistical_feature = c.sipm_counts_n_position[:,:,:,0].map(statistical_feature_func)
+gamma_2_statistical_feature = c.sipm_counts_n_position[:,:,:,4].map(statistical_feature_func)
+
+gamma_1_statistical_z = statical_feature_to_local_z(gamma_1_statistical_feature.array)
+gamma_1_local_anger.z = gamma_1_statistical_z
+gamma_2_statistical_z = statical_feature_to_local_z(gamma_2_statistical_feature.array)
+gamma_2_local_anger.z = gamma_2_statistical_z
+
+gamma_1_anger = gamma_1_local_anger.batch_to_global(c.crystalIDs[:,0])
+gamma_2_anger = gamma_2_local_anger.batch_to_global(c.crystalIDs[:,1])
+
+c.anger_infered_lor = Segment(gamma_1_anger, gamma_2_anger)
+
+
+
+####################################################################################################
+
+
+
 sipm_counts_n_position = c.sipm_counts_n_position.to_numpy()
-print_messate_n_save_to_npy('sipm_counts_n_position', sipm_counts_n_position)
+print_messate_n_save_to_npy('sipm_counts_n_position_with_statistical_z', sipm_counts_n_position)
 
 anger_infered_lor = c.anger_infered_lor.to_listmode()
-print_messate_n_save_to_npy('anger_infered_lor', anger_infered_lor)
+print_messate_n_save_to_npy('anger_infered_lor_with_statistical_z', anger_infered_lor)
 
 real_lor = c.real_lor.to_listmode()
-print_messate_n_save_to_npy('real_lor', real_lor)
+print_messate_n_save_to_npy('real_lor_with_statistical_z', real_lor)
 
 source = c.sourcePos.to_numpy().T
-print_messate_n_save_to_npy('source', source)
+print_messate_n_save_to_npy('source_with_statistical_z', source)
 
