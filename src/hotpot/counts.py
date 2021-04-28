@@ -174,12 +174,12 @@ class Counts:
 
     def to_plotly(self, idx):
         return [
-            *self.counts_plotly_global[idx]
-            .map(lambda x: x[0].to_plotly_as_mesh3d(opacity=0.8, color="pink", name="optical photon counts"))
-            .array,
-            *self.counts_plotly_global[idx]
-            .map(lambda x: x[1].to_plotly_as_mesh3d(opacity=0.8, color="pink", name="optical photon counts"))
-            .array,
+            # *self.counts_plotly_global[idx]
+            # .map(lambda x: x[0].to_plotly_as_mesh3d(opacity=0.8, color="pink", name="optical photon counts"))
+            # .array,
+            # *self.counts_plotly_global[idx]
+            # .map(lambda x: x[1].to_plotly_as_mesh3d(opacity=0.8, color="pink", name="optical photon counts"))
+            # .array,
             self.sourcePos[idx].to_plotly(marker=dict(color="red", size=4), name="source position"),
             *self.real_lor[idx].to_plotly_segment(marker=dict(color="gold", size=3), name="real LOR"),
             *self.anger_infered_lor[idx].to_plotly_segment(
