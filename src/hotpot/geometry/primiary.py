@@ -291,6 +291,18 @@ class Cartesian3:
         diff = self - other
         return tf.sqrt(tf.reduce_sum(tf.square(diff.to_tensor()), axis=0))
 
+    def griding_by(self, grid_border):
+        overall_mask = np.full([*grid_border.shape[:2],len(self)], False)
+        for x in range(grid_border.shape[0]):
+            for y in range(grid_border.shape[1]):
+                up_x, up_y, low_x, low_y = grid_border[x,y] 
+                xy_mask = np.logical_and(
+                    np.logical_and(self.x>low_x, self.x<up_x),
+                    np.logical_and(self.y>low_y, self.y<up_y),
+                )
+                overall_mask[x,y] = xy_mask
+        return overall_mask
+
     def to_matrix(self):
         return tf.stack([self.x, self.y, self.z], axis=0)
 
@@ -349,10 +361,6 @@ class Cartesian3:
 
     def to_plotly(self, mode="markers", **kwargs):
         return go.Scatter3d(x=self.x, y=self.y, z=self.z, mode=mode, **kwargs)
-
-    # def to_plotly_as_surface(self):
-    # np
-    # return go.Surface(z=self.)
 
     def to_plotly_as_mesh3d(self, **kwargs):
         return go.Mesh3d(x=self.x, y=self.y, z=self.z, **kwargs)
@@ -429,6 +437,9 @@ class Segment:
 
     def direct_vector(self):
         return (self.fst - self.snd).fmap(lambda i: i / self.seg_length().numpy())
+
+    def hstack(self):
+        return self.fst.concat(self.snd)
 
     @property
     def middle_point(self):
