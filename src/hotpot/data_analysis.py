@@ -38,7 +38,7 @@ def map_by_griding_mask(data, func: "do sth with indexed data", mask):
 
 
 def plot_xy_bias_vector(xy_error, bias_vector, xy_origins):
-    fig = plt.figure(1,figsize=(10, 10))
+    fig = plt.figure(1,figsize=(5, 5))
     ax = fig.add_subplot(111)
 
     im = ax.imshow(
@@ -66,15 +66,15 @@ def plot_xy_bias_vector(xy_error, bias_vector, xy_origins):
             )
 
     fig.colorbar(im, ax=ax)
-    plt.savefig('tmp.png', dpi=300)
+    plt.savefig('tmp.png', dpi=500)
 
 
 class CachedSysetemData:
     def __init__(self, cached_csv_path):
         self.raw_sample = pd.read_csv(cached_csv_path)
         self.source = Cartesian3.from_xyz(
-            self.raw_sample.sourcePosX,
-            self.raw_sample.sourcePosY,
+                self.raw_sample.sourcePosX,
+                self.raw_sample.sourcePosY,
             self.raw_sample.sourcePosZ,
         )
         self.real_lor_global = Segment(
