@@ -38,7 +38,7 @@ def map_by_griding_mask(data, func: "do sth with indexed data", mask):
 
 
 def plot_xy_bias_vector(xy_error, bias_vector, xy_origins):
-    fig = plt.figure(1,figsize=(5, 5))
+    fig = plt.figure(1,figsize=(8, 8))
     ax = fig.add_subplot(111)
 
     im = ax.imshow(
@@ -155,6 +155,35 @@ class CachedSysetemData:
             )
         )
 
+        self.single_crystal_net_infered_lor_local = Segment(
+            Cartesian3.from_xyz(
+                self.raw_sample.single_crystal_net_infered_gamma_1_local_x,
+                self.raw_sample.single_crystal_net_infered_gamma_1_local_y,
+                self.raw_sample.single_crystal_net_infered_gamma_1_local_z,
+            ),
+            Cartesian3.from_xyz(
+                self.raw_sample.single_crystal_net_infered_gamma_2_local_x,
+                self.raw_sample.single_crystal_net_infered_gamma_2_local_y,
+                self.raw_sample.single_crystal_net_infered_gamma_2_local_z,
+            )
+        )
+
+        self.single_crystal_net_infered_lor_global = Segment(
+            Cartesian3.from_xyz(
+                self.raw_sample.single_crystal_net_infered_gamma_1_global_x,
+                self.raw_sample.single_crystal_net_infered_gamma_1_global_y,
+                self.raw_sample.single_crystal_net_infered_gamma_1_global_z,
+            ),
+            Cartesian3.from_xyz(
+                self.raw_sample.single_crystal_net_infered_gamma_2_global_x,
+                self.raw_sample.single_crystal_net_infered_gamma_2_global_y,
+                self.raw_sample.single_crystal_net_infered_gamma_2_global_z,
+            )
+        )
+
+
+    def __getitem__(self, idx):
+        return self.raw_sample.iloc[idx]
        
     @property
     def griding_mask(self):
@@ -188,6 +217,21 @@ class CachedSysetemData:
         plot_xy_bias_vector(
             self.anger_xy_error_with_bias_vector[:,:,0], 
             self.anger_xy_error_with_bias_vector[:,:,1:] + grid_center, 
+            grid_center
+        )
+
+    @property
+    def single_crystal_net_xy_error_with_bias_vector(self):
+        return np.asarray(map_by_griding_mask(
+            self.single_crystal_net_infered_lor_local.hstack() - self.real_lor_local.hstack(),
+            Cartesian3_xy_mean,
+            self.griding_mask
+        ))
+
+    def plot_single_crystal_net_xy_bias_vector(self):
+        plot_xy_bias_vector(
+            self.single_crystal_net_xy_error_with_bias_vector[:,:,0],
+            self.single_crystal_net_xy_error_with_bias_vector[:,:,1:] + grid_center,
             grid_center
         )
 
@@ -238,6 +282,31 @@ class CachedSysetemData:
             extent=[-25,25,25,-25],
             vmin=np.array(self.anger_mean_mae).min(),
             vmax=np.array(self.anger_mean_mae).max()
+        )
+        fig.colorbar(im, ax=ax)
+        plt.savefig('tmp.png', dpi=300)
+
+    @property
+    def single_crystal_net_mae(self):
+        return np.array(
+            map_by_griding_mask(
+                self.single_crystal_net_infered_lor_local.hstack() - self.real_lor_local.hstack(),
+                lambda c_3: np.mean(c_3.length_as_vector()),
+                self.griding_mask
+            )
+        )
+
+    def plot_single_crystal_net_mae(self):
+        fig = plt.figure(1,figsize=(10, 10))
+        ax = fig.add_subplot(111)
+
+        im = ax.imshow(
+            self.single_crystal_net_mae,
+            cmap='viridis',
+            aspect='equal',
+            extent=[-25,25,25,-25],
+            vmin=np.array(self.single_crystal_net_mae).min(),
+            vmax=np.array(self.single_crystal_net_mae).max()
         )
         fig.colorbar(im, ax=ax)
         plt.savefig('tmp.png', dpi=300)
