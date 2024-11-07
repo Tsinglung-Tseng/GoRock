@@ -1,10 +1,32 @@
 ## GoRock DSL: A Comprehensive Guide
 
+### Abstract
+Monolithic crystal PET detectors need to be calibrated before they are
+put into service. Existing calibration methods usually collect an extensive dataset
+of reference events and estimate the position of γ photon interaction for individual
+detectors, which makes the calibration for a complete system lengthy and impractical.
+This work presents a whole-system calibration method for the first time in order
+to design a practical PET system with monolithic crystal detectors. The method
+forms the reference dataset by scanning a point source at different known locations,
+without the mechanical collimation. Then a likelihood model is built to describe the
+direct estimation of the line of response(LOR), instead of the position of γ photon
+interaction. To achieve the maximum likelihood we finally developed a deep learning
+network that encodes the charactistics of the entire system and creates a mapping
+from the pairwise distributions of scintillation photons to the LOR positions. Monte
+Carlo simulation shows that the proposed method estimates the position of γ photon
+interactions with a median positioning error of 0.36 mm in the x-y direction, and 0.17
+mm in the depth of interaction, for a PET system with 50 mm × 50 mm × 15 mm
+monolithic crystals. Compared to other method, the direct LOR estimation has higher
+accuracy and precision. It is able to locate the incident γ photons without mechanical
+collimations; and more importantly, it calibrates the whole PET system simultaneously
+in a few hours; unlike other calibration method that take hours for each detector.
+
+![Experimental PET system and LOR positioning diagram](./figs/Xnip2024-11-07_01-56-58.jpg)
+![Experimental PET system and LOR positioning diagram](./figs/Xnip2024-11-07_01-56-32.jpg)
+![Experimental PET system and LOR positioning diagram](./figs/Xnip2024-11-07_01-56-43.jpg)
 
 ### Overview
 GoRock’s DSL offers a flexible, composable framework for PET (Positron Emission Tomography) data analysis and visualization, particularly geared toward efficient event filtering, coordinate transformation, and Line of Response (LOR) handling. By simplifying complex operations into modular functions, GoRock enables users to focus on high-level data insights with minimal code.
-
-![Experimental PET system and LOR positioning diagram](./figs/Xnip2024-11-07_01-50-46.jpg)
 
 
 ### Core Functionalities
