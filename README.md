@@ -1,7 +1,11 @@
 ## GoRock DSL: A Comprehensive Guide
 
+
 ### Overview
 GoRock’s DSL offers a flexible, composable framework for PET (Positron Emission Tomography) data analysis and visualization, particularly geared toward efficient event filtering, coordinate transformation, and Line of Response (LOR) handling. By simplifying complex operations into modular functions, GoRock enables users to focus on high-level data insights with minimal code.
+
+![Experimental PET system and LOR positioning diagram](./figs/Xnip2024-11-07_01-50-46.jpg)
+
 
 ### Core Functionalities
 
