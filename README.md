@@ -1,7 +1,3 @@
-Based on the code snippets and concepts you've provided, here’s a refined usage guide that highlights the DSL’s compositional and modular design:
-
----
-
 ## GoRock DSL: A Comprehensive Guide
 
 ### Overview
