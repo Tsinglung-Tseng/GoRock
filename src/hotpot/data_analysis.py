@@ -181,6 +181,32 @@ class CachedSysetemData:
             )
         )
 
+        self.net_with_net_infered_lor_local = Segment(
+            Cartesian3.from_xyz(
+                self.raw_sample.lor_net_gamma_1_x_local,
+                self.raw_sample.lor_net_gamma_1_y_local,
+                self.raw_sample.lor_net_gamma_1_z_local,
+            ),
+            Cartesian3.from_xyz(
+                self.raw_sample.lor_net_gamma_2_x_local,
+                self.raw_sample.lor_net_gamma_2_y_local,
+                self.raw_sample.lor_net_gamma_2_z_local,
+            )
+        )
+
+        self.net_with_net_infered_lor_global = Segment(
+            Cartesian3.from_xyz(
+                self.raw_sample.lor_net_gamma_1_x,
+                self.raw_sample.lor_net_gamma_1_y,
+                self.raw_sample.lor_net_gamma_1_z,
+            ),
+            Cartesian3.from_xyz(
+                self.raw_sample.lor_net_gamma_2_x,
+                self.raw_sample.lor_net_gamma_2_y,
+                self.raw_sample.lor_net_gamma_2_z,
+            )
+        )
+
 
     def __getitem__(self, idx):
         return self.raw_sample.iloc[idx]
@@ -232,6 +258,21 @@ class CachedSysetemData:
         plot_xy_bias_vector(
             self.single_crystal_net_xy_error_with_bias_vector[:,:,0],
             self.single_crystal_net_xy_error_with_bias_vector[:,:,1:] + grid_center,
+            grid_center
+        )
+
+    @property
+    def net_with_net_pe_xy_error_with_bias_vector(self):
+        return np.asarray(map_by_griding_mask(
+            self.net_with_net_infered_lor_local.hstack() - self.real_lor_local.hstack(),
+            Cartesian3_xy_mean,
+            self.griding_mask
+        ))
+
+    def plot_net_with_net_pe_xy_error_with_bias_vector(self):
+        plot_xy_bias_vector(
+            self.net_with_net_pe_xy_error_with_bias_vector[:,:,0],
+            self.net_with_net_pe_xy_error_with_bias_vector[:,:,1:] + grid_center,
             grid_center
         )
 
@@ -307,6 +348,32 @@ class CachedSysetemData:
             extent=[-25,25,25,-25],
             vmin=np.array(self.single_crystal_net_mae).min(),
             vmax=np.array(self.single_crystal_net_mae).max()
+        )
+        fig.colorbar(im, ax=ax)
+        plt.savefig('tmp.png', dpi=300)
+
+
+    @property
+    def net_with_net_pe_mae(self):
+        return np.array(
+            map_by_griding_mask(
+                self.net_with_net_infered_lor_local.hstack() - self.real_lor_local.hstack(),
+                lambda c_3: np.mean(c_3.length_as_vector()),
+                self.griding_mask
+            )
+        )
+
+    def plot_net_with_net_pe_mae(self):
+        fig = plt.figure(1,figsize=(10, 10))
+        ax = fig.add_subplot(111)
+
+        im = ax.imshow(
+            self.net_with_net_pe_mae,
+            cmap='viridis',
+            aspect='equal',
+            extent=[-25,25,25,-25],
+            vmin=np.array(self.net_with_net_pe_mae).min(),
+            vmax=np.array(self.net_with_net_pe_mae).max()
         )
         fig.colorbar(im, ax=ax)
         plt.savefig('tmp.png', dpi=300)

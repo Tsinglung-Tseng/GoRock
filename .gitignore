@@ -1,6 +1,7 @@
 # Created by https://www.gitignore.io/api/jupyternotebooks
 # Edit at https://www.gitignore.io/?templates=jupyternotebooks
 
+.DS_Store
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
